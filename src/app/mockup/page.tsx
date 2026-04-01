@@ -113,6 +113,9 @@ export default function MockupPresentation() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [selectedCustomer, setSelectedCustomer] = useState(mockCustomers[0])
   const [selectedTemplate, setSelectedTemplate] = useState(whatsappTemplates[0])
+  const [whatsappModal, setWhatsappModal] = useState<{ customer: typeof mockCustomers[0] } | null>(null)
+  const [modalTemplate, setModalTemplate] = useState(whatsappTemplates[0])
+  const [modalSent, setModalSent] = useState(false)
 
   const currentIdx = STEPS.findIndex(s => s.id === currentStep)
   const activeNav = STEP_NAV[currentStep]
@@ -471,7 +474,10 @@ export default function MockupPresentation() {
                           <span className="text-xs text-blue-600 font-medium">In Store</span>
                         </div>
                         <p className="text-xs text-gray-400">{c.points.toLocaleString()} pts</p>
-                        <button className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700">
+                        <button
+                          className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700"
+                          onClick={(e) => { e.stopPropagation(); setModalTemplate(whatsappTemplates[0]); setModalSent(false); setWhatsappModal({ customer: c }) }}
+                        >
                           Send WhatsApp
                         </button>
                       </div>
@@ -766,6 +772,119 @@ export default function MockupPresentation() {
           </div>
         </main>
       </div>
+
+      {/* ── WHATSAPP TEMPLATE MODAL ── */}
+      {whatsappModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40" onClick={() => setWhatsappModal(null)} />
+
+          {/* Panel */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
+
+            {/* Modal Header */}
+            <div className="bg-blue-600 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 bg-white text-blue-700 rounded-full flex items-center justify-center font-bold text-sm">
+                  {whatsappModal.customer.avatar}
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm">{whatsappModal.customer.name}</p>
+                  <p className="text-blue-200 text-xs">{whatsappModal.customer.phone} · {whatsappModal.customer.tier} Member · WhatsApp Opt-in ✓</p>
+                </div>
+              </div>
+              <button onClick={() => setWhatsappModal(null)} className="text-blue-200 hover:text-white">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {!modalSent ? (
+              <div className="flex divide-x divide-gray-100 max-h-[70vh]">
+
+                {/* Template List */}
+                <div className="w-64 flex-shrink-0 overflow-y-auto">
+                  <p className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">Choose Template</p>
+                  {whatsappTemplates.map((t) => (
+                    <div
+                      key={t.id}
+                      onClick={() => setModalTemplate(t)}
+                      className={`px-4 py-3 cursor-pointer border-l-4 transition-all ${modalTemplate.id === t.id ? 'border-blue-600 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`}
+                    >
+                      <p className="text-sm font-medium text-gray-900">{t.name}</p>
+                      <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded mt-1 inline-block">{t.category}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Preview Pane */}
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <p className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">Preview</p>
+
+                  {/* WhatsApp chat bubble preview */}
+                  <div className="flex-1 bg-blue-50 p-5 overflow-y-auto">
+                    <div className="max-w-xs bg-white rounded-tr-xl rounded-b-xl shadow-sm p-4">
+                      <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
+                        {fillTemplate(modalTemplate, whatsappModal.customer)}
+                      </p>
+                      <div className="flex justify-end items-center space-x-1 mt-2">
+                        <span className="text-gray-400 text-xs">Now</span>
+                        <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 16 15">
+                          <path d="M15.01 3.316l-.478-.372a.365.365 0 00-.51.063L8.666 9.879a.32.32 0 01-.484.033l-.358-.325a.319.319 0 00-.484.032l-.378.483a.418.418 0 00.036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 00-.064-.512zm-4.1 0l-.478-.372a.365.365 0 00-.51.063L4.566 9.879a.32.32 0 01-.484.033L1.891 7.769a.366.366 0 00-.515.006l-.423.433a.364.364 0 00.006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 00-.063-.51z"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Send button */}
+                  <div className="px-5 py-4 border-t border-gray-100 bg-white">
+                    <button
+                      className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-700 flex items-center justify-center space-x-2"
+                      onClick={() => setModalSent(true)}
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/>
+                      </svg>
+                      <span>Send to {whatsappModal.customer.name.split(' ')[0]} via WhatsApp</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Sent confirmation */
+              <div className="p-10 text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">Message Sent!</h3>
+                <p className="text-gray-500 text-sm mb-1">
+                  <span className="font-semibold text-blue-600">{modalTemplate.name}</span> sent to {whatsappModal.customer.name}
+                </p>
+                <p className="text-gray-400 text-xs mb-6">{whatsappModal.customer.phone} · Delivered via Meta Business API</p>
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <span className="text-xs text-gray-500">Sent</span>
+                  <div className="w-8 h-0.5 bg-blue-300"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-xs text-gray-500">Delivered</span>
+                  <div className="w-8 h-0.5 bg-blue-200"></div>
+                  <div className="w-2 h-2 bg-blue-200 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-gray-400">Awaiting read...</span>
+                </div>
+                <button
+                  className="mt-6 border-2 border-blue-600 text-blue-600 px-6 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50"
+                  onClick={() => setWhatsappModal(null)}
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
