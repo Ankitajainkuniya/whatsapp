@@ -547,7 +547,7 @@ export default function MockupPresentation() {
             {currentStep === 'whatsapp-compose' && (
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-1">Compose Message</h1>
-                <p className="text-gray-500 mb-6 text-sm">Pick a Meta-approved template — auto-personalised with the customer's name, tier, and preferences.</p>
+                <p className="text-gray-500 mb-6 text-sm">Pick a Meta-approved template — auto-personalised with the customer&apos;s name, tier, and preferences.</p>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Templates */}
@@ -725,7 +725,7 @@ export default function MockupPresentation() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">Today's Revenue</p>
+                          <p className="text-sm font-semibold text-gray-900">Today&apos;s Revenue</p>
                           <p className="text-xs text-gray-500">13 converted customers</p>
                         </div>
                         <p className="text-2xl font-black text-blue-600">₹21,450</p>
