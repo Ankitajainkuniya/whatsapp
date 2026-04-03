@@ -68,7 +68,7 @@ const suggestedItems = [
 
 // ─── NAV ────────────────────────────────────────────────────────────────────
 
-type View = 'checkin-flow' | 'repeat-flow' | 'dashboard' | 'customer-detail' | 'rewards' | 'outreach' | 'insights'
+type View = 'checkin-flow' | 'repeat-flow' | 'dashboard' | 'customer-detail' | 'rewards' | 'outreach' | 'wa-command' | 'insights'
 
 const NAV = [
   { label: 'New Customer', icon: 'M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H9V11M15,11H17V13H15V11M19,11H21V13H19V11M1,21H23L12,10L1,21Z', view: 'checkin-flow' as View },
@@ -76,6 +76,7 @@ const NAV = [
   { label: 'Dashboard', icon: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z', view: 'dashboard' as View },
   { label: 'Rewards', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z', view: 'rewards' as View },
   { label: 'Outreach', icon: 'M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z', view: 'outreach' as View },
+  { label: 'WA Command Center', icon: 'M17.472,14.382c-0.297,0.297-0.626,0.569-0.987,0.816c-1.158,0.795-2.517,1.219-3.935,1.227c-1.415,0.008-2.86-0.396-4.115-1.146l-3.77,0.988l1.009-3.678c-0.764-1.264-1.148-2.696-1.117-4.135c0.031-1.438,0.466-2.852,1.264-4.098c0.797-1.246,1.933-2.31,3.292-3.088c1.359-0.778,2.905-1.152,4.477-1.084c1.572,0.068,3.08,0.578,4.366,1.477c1.286,0.899,2.315,2.158,2.983,3.647c0.668,1.489,0.859,3.146,0.552,4.801C19.177,12.106,18.557,13.294,17.472,14.382z', view: 'wa-command' as View },
   { label: 'Insights', icon: 'M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z', view: 'insights' as View },
 ]
 
@@ -99,6 +100,8 @@ export default function Dashboard() {
   const [expandedCard, setExpandedCard] = useState<string | null>('C001')
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null)
   const [expandedTier, setExpandedTier] = useState<string | null>(null)
+  const [manualCheckin, setManualCheckin] = useState(false)
+  const [audienceFilters, setAudienceFilters] = useState<Record<string, boolean>>({ all: true })
   const [taggedItems, setTaggedItems] = useState<string[]>([])
   const [staffNote, setStaffNote] = useState('')
   const [pointsApplied, setPointsApplied] = useState(false)
@@ -881,6 +884,14 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Manual check-in button */}
+      <div className="flex items-center justify-end mb-4">
+        <button onClick={() => setManualCheckin(true)} className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+          <span>Manual Check-In</span>
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* ── Live customers (2 cols) ── */}
         <div className="lg:col-span-2 space-y-5">
@@ -1469,52 +1480,259 @@ export default function Dashboard() {
     </div>
   )
 
-  // ── OUTREACH CENTER ───────────────────────────────────────────────────────
+  // ── OUTREACH CENTER (with audience targeting) ──────────────────────────────
 
-  const renderOutreach = () => (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Post-Visit Outreach</h1>
-      <p className="text-gray-500 text-sm mb-5">Reach customers across every channel — WhatsApp, SMS, Email, Instagram, and RCS. One platform.</p>
-      <div className="grid grid-cols-5 gap-3 mb-6">
-        {[
-          { ch: 'WhatsApp', icon: '💬', sent: 847, del: '98.7%', open: '87%', active: true },
-          { ch: 'SMS', icon: '📱', sent: 312, del: '99.1%', open: '62%', active: true },
-          { ch: 'Email', icon: '📧', sent: 534, del: '97.3%', open: '34%', active: true },
-          { ch: 'Instagram DM', icon: '📸', sent: 186, del: '96.5%', open: '71%', active: true },
-          { ch: 'RCS', icon: '💎', sent: 94, del: '95.8%', open: '58%', active: false },
-        ].map((ch) => (
-          <div key={ch.ch} className={`border-2 rounded-xl p-3 ${ch.active ? 'border-blue-600 bg-blue-50' : 'border-gray-200 border-dashed'}`}>
-            <div className="flex items-center space-x-1.5 mb-2">
-              <span className="text-lg">{ch.icon}</span>
-              <p className="font-semibold text-gray-900 text-xs">{ch.ch}</p>
+  const renderOutreach = () => {
+    const filters = [
+      { id: 'all', label: 'All Customers', count: 1248 },
+      { id: 'plat', label: '🏆 Platinum', count: 12 },
+      { id: 'gold', label: '🥇 Gold', count: 48 },
+      { id: 'silver', label: '🥈 Silver', count: 154 },
+      { id: 'ethnic', label: 'Ethnic Wear', count: 312 },
+      { id: 'western', label: 'Western', count: 287 },
+      { id: 'wedding', label: '📅 Wedding', count: 64 },
+      { id: 'inactive', label: 'Inactive 30d+', count: 198 },
+      { id: 'birthday', label: '🎂 Birthday this month', count: 23 },
+      { id: 'highvalue', label: '💎 High Value (>₹50K)', count: 38 },
+    ]
+    const activeFilters = Object.entries(audienceFilters).filter(([, v]) => v).map(([k]) => k)
+    const toggleFilter = (id: string) => {
+      if (id === 'all') { setAudienceFilters({ all: true }); return }
+      const next = { ...audienceFilters, all: false, [id]: !audienceFilters[id] }
+      if (Object.values(next).every(v => !v)) next.all = true
+      setAudienceFilters(next)
+    }
+
+    return (
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Outreach Campaign</h1>
+        <p className="text-gray-500 text-sm mb-5">Select your target audience, pick a channel and template, then send.</p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* ── Left: Audience Builder ── */}
+          <div className="border border-gray-200 rounded-xl p-4">
+            <p className="font-semibold text-gray-900 text-sm mb-3">🎯 Target Audience</p>
+            <div className="space-y-1.5">
+              {filters.map(f => (
+                <div key={f.id} onClick={() => toggleFilter(f.id)}
+                  className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all ${audienceFilters[f.id] ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 text-gray-700'}`}>
+                  <span className="text-xs font-medium">{f.label}</span>
+                  <span className={`text-xs ${audienceFilters[f.id] ? 'text-blue-200' : 'text-gray-400'}`}>{f.count}</span>
+                </div>
+              ))}
             </div>
-            {ch.active ? (
-              <div className="space-y-0.5 text-xs text-gray-600">
-                <div className="flex justify-between"><span>Sent</span><span className="font-medium">{ch.sent}</span></div>
-                <div className="flex justify-between"><span>Delivery</span><span className="font-medium text-blue-600">{ch.del}</span></div>
-                <div className="flex justify-between"><span>Opens</span><span className="font-medium text-blue-600">{ch.open}</span></div>
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-xs text-gray-500">Selected audience:</p>
+              <p className="text-lg font-black text-blue-600 mt-0.5">
+                {audienceFilters.all ? '1,248' : activeFilters.reduce((sum, k) => sum + (filters.find(f => f.id === k)?.count || 0), 0).toLocaleString()} customers
+              </p>
+            </div>
+          </div>
+
+          {/* ── Right: Channel + Template + Preview ── */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Channel selector */}
+            <div className="border border-gray-200 rounded-xl p-4">
+              <p className="font-semibold text-gray-900 text-sm mb-3">📡 Select Channel</p>
+              <div className="grid grid-cols-5 gap-2">
+                {[
+                  { ch: 'WhatsApp', icon: '💬', reach: '98.7%' },
+                  { ch: 'SMS', icon: '📱', reach: '99.1%' },
+                  { ch: 'Email', icon: '📧', reach: '97.3%' },
+                  { ch: 'Instagram', icon: '📸', reach: '96.5%' },
+                  { ch: 'RCS', icon: '💎', reach: '95.8%' },
+                ].map((ch, i) => (
+                  <div key={ch.ch} className={`text-center p-3 rounded-xl border-2 cursor-pointer transition-all ${i === 0 ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+                    <p className="text-xl mb-1">{ch.icon}</p>
+                    <p className="text-xs font-semibold text-gray-900">{ch.ch}</p>
+                    <p className="text-xs text-gray-400">{ch.reach} reach</p>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <p className="text-xs text-gray-400 italic">Coming soon</p>
-            )}
+            </div>
+
+            {/* Template picker */}
+            <div className="border border-gray-200 rounded-xl p-4">
+              <p className="font-semibold text-gray-900 text-sm mb-3">💬 Select Template</p>
+              <div className="grid grid-cols-2 gap-2">
+                {outreachTemplates.filter(t => t.channel === 'WhatsApp').map(t => (
+                  <div key={t.id} className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${outreachTemplate.id === t.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-200'}`}
+                    onClick={() => setOutreachTemplate(t)}>
+                    <p className="text-sm font-medium text-gray-900">{t.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{t.body.substring(0, 60)}...</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Summary + Send */}
+            <div className="bg-blue-600 rounded-xl p-5 flex items-center justify-between">
+              <div>
+                <p className="text-white font-semibold text-sm">Ready to send</p>
+                <p className="text-blue-200 text-xs mt-0.5">
+                  &ldquo;{outreachTemplate.name}&rdquo; via WhatsApp → {audienceFilters.all ? '1,248' : activeFilters.reduce((sum, k) => sum + (filters.find(f => f.id === k)?.count || 0), 0).toLocaleString()} customers
+                </p>
+              </div>
+              <button className="bg-white text-blue-700 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-blue-50">Send Campaign</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── WA COMMAND CENTER ──────────────────────────────────────────────────────
+
+  const renderWACommand = () => (
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">WhatsApp Command Center</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Meta Business API Dashboard — Real-time messaging operations</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
+          <span className="text-sm font-semibold text-blue-600">Meta Verified</span>
+        </div>
+      </div>
+
+      {/* Status banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center"><span className="text-white text-lg">💬</span></div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Business Account: MODENX Ensemble</p>
+            <p className="text-xs text-gray-500">Phone: +91 80123 45678 · Tier: Standard · Quality: High</p>
+          </div>
+        </div>
+        <span className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full font-medium">Connected</span>
+      </div>
+
+      {/* KPI row */}
+      <div className="grid grid-cols-4 gap-3 mb-5">
+        {[
+          { label: 'Messages Sent (24h)', value: '342', change: '↑ 18%' },
+          { label: 'Delivery Rate', value: '98.7%', change: '↑ 0.3%' },
+          { label: 'Read Rate', value: '87.2%', change: '↑ 2.1%' },
+          { label: 'Response Rate', value: '34.8%', change: '↑ 5.4%' },
+        ].map((k, i) => (
+          <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
+            <p className="text-xs text-gray-500">{k.label}</p>
+            <p className="text-2xl font-black text-gray-900 mt-1">{k.value}</p>
+            <p className="text-xs text-blue-600 font-medium mt-0.5">{k.change}</p>
           </div>
         ))}
       </div>
-      <div className="border border-gray-200 rounded-xl overflow-hidden">
-        <div className="px-5 py-3 bg-gray-50 border-b flex justify-between items-center">
-          <p className="font-semibold text-gray-900 text-sm">All Customers</p>
-          <button className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700">Bulk Send</button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+        {/* Template Status */}
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 bg-gray-50 border-b flex items-center justify-between">
+            <p className="font-semibold text-gray-900 text-sm">Message Templates</p>
+            <button className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg">+ New Template</button>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {[
+              { name: 'Welcome Back Offer', status: 'Approved', category: 'MARKETING', sent: 312, quality: 'High' },
+              { name: 'Wishlist Back in Stock', status: 'Approved', category: 'UTILITY', sent: 186, quality: 'High' },
+              { name: 'Post-Visit Thank You', status: 'Approved', category: 'MARKETING', sent: 245, quality: 'Medium' },
+              { name: 'Loyalty Upgrade', status: 'Pending', category: 'MARKETING', sent: 0, quality: '—' },
+              { name: 'Flash Sale Alert', status: 'Rejected', category: 'MARKETING', sent: 0, quality: '—' },
+            ].map((t, i) => (
+              <div key={i} className="flex items-center justify-between px-5 py-3">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{t.name}</p>
+                  <p className="text-xs text-gray-400">{t.category} · {t.sent > 0 ? `${t.sent} sent` : 'Not sent yet'}</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {t.quality !== '—' && <span className="text-xs text-gray-400">Q: {t.quality}</span>}
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${t.status === 'Approved' ? 'bg-blue-100 text-blue-700' : t.status === 'Pending' ? 'bg-gray-100 text-gray-600' : 'bg-red-50 text-red-600'}`}>{t.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Conversations & Limits */}
+        <div className="space-y-4">
+          <div className="border border-gray-200 rounded-xl p-4">
+            <p className="font-semibold text-gray-900 text-sm mb-3">Conversation Breakdown (24h)</p>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { type: 'Marketing', count: 187, limit: 1000, color: 'bg-blue-600' },
+                { type: 'Utility', count: 94, limit: 'Unlimited', color: 'bg-blue-500' },
+                { type: 'Service', count: 42, limit: 'Unlimited', color: 'bg-blue-400' },
+                { type: 'Authentication', count: 19, limit: 'Unlimited', color: 'bg-blue-300' },
+              ].map(c => (
+                <div key={c.type} className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs font-medium text-gray-700">{c.type}</p>
+                    <p className="text-sm font-black text-gray-900">{c.count}</p>
+                  </div>
+                  {typeof c.limit === 'number' ? (
+                    <>
+                      <div className="w-full bg-blue-100 rounded-full h-1.5">
+                        <div className={`${c.color} h-1.5 rounded-full`} style={{ width: `${(c.count / c.limit) * 100}%` }} />
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">{c.count}/{c.limit} limit</p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-gray-400">{c.limit}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border border-gray-200 rounded-xl p-4">
+            <p className="font-semibold text-gray-900 text-sm mb-3">Account Health</p>
+            <div className="space-y-2.5">
+              {[
+                { label: 'Quality Rating', value: 'High', icon: '🟢' },
+                { label: 'Messaging Limit', value: '1K / 24h', icon: '📊' },
+                { label: 'Business Verification', value: 'Verified', icon: '✅' },
+                { label: 'Display Name', value: 'MODENX Ensemble', icon: '🏪' },
+                { label: 'Two-Factor Auth', value: 'Enabled', icon: '🔐' },
+              ].map((h, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm">{h.icon}</span>
+                    <span className="text-xs text-gray-600">{h.label}</span>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-900">{h.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent conversations */}
+      <div className="border border-gray-200 rounded-xl overflow-hidden">
+        <div className="px-5 py-3 bg-gray-50 border-b"><p className="font-semibold text-gray-900 text-sm">Recent Conversations</p></div>
         <div className="divide-y divide-gray-50">
-          {mockCustomers.map((c) => (
-            <div key={c.id} className="flex items-center space-x-4 px-5 py-3">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">{c.avatar}</div>
-              <div className="flex-1"><p className="font-medium text-gray-900 text-sm">{c.name}</p><p className="text-xs text-gray-500">{c.tier} · Last: {c.lastVisit}</p></div>
-              <div className="flex space-x-1.5">
-                <button onClick={() => openOutreach(c)} className="text-xs bg-blue-600 text-white px-2 py-1.5 rounded-lg hover:bg-blue-700">💬</button>
-                <button onClick={() => { setOutreachTemplate(outreachTemplates[2]); setOutreachSent(false); setOutreachModal(c) }} className="text-xs bg-blue-600 text-white px-2 py-1.5 rounded-lg hover:bg-blue-700">📱</button>
-                <button onClick={() => { setOutreachTemplate(outreachTemplates[3]); setOutreachSent(false); setOutreachModal(c) }} className="text-xs bg-blue-600 text-white px-2 py-1.5 rounded-lg hover:bg-blue-700">📧</button>
-                <button onClick={() => { setOutreachTemplate(outreachTemplates[4]); setOutreachSent(false); setOutreachModal(c) }} className="text-xs bg-blue-600 text-white px-2 py-1.5 rounded-lg hover:bg-blue-700">📸</button>
+          {[
+            { name: 'Meera Kapoor', msg: 'Yes! Coming to billing right now 😊', time: '10:41 AM', status: 'replied', template: 'Welcome Back' },
+            { name: 'Vikram Sinha', msg: 'Delivered', time: '11:12 AM', status: 'delivered', template: 'Points Reminder' },
+            { name: 'Zara Deshpande', msg: 'Will check it out this weekend!', time: '11:48 AM', status: 'replied', template: 'New Arrivals' },
+            { name: 'Neha Kumar', msg: 'Read', time: '12:05 PM', status: 'read', template: 'Post-Visit Thank You' },
+            { name: 'Arjun Patel', msg: 'Sent', time: '12:30 PM', status: 'sent', template: 'Welcome Back' },
+          ].map((c, i) => (
+            <div key={i} className="flex items-center space-x-4 px-5 py-3">
+              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">{c.name.split(' ').map(n => n[0]).join('')}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center space-x-2">
+                  <p className="font-medium text-gray-900 text-sm">{c.name}</p>
+                  <span className="text-xs text-gray-400">via {c.template}</span>
+                </div>
+                <p className="text-xs text-gray-500 truncate">{c.msg}</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-xs text-gray-400">{c.time}</p>
+                <span className={`text-xs font-medium ${c.status === 'replied' ? 'text-blue-600' : c.status === 'read' ? 'text-blue-400' : c.status === 'delivered' ? 'text-blue-300' : 'text-gray-400'}`}>
+                  {c.status === 'replied' ? '↩ Replied' : c.status === 'read' ? '✓✓ Read' : c.status === 'delivered' ? '✓✓ Delivered' : '✓ Sent'}
+                </span>
               </div>
             </div>
           ))}
@@ -1825,6 +2043,7 @@ export default function Dashboard() {
     'customer-detail': renderCustomerDetail,
     'rewards': renderRewards,
     'outreach': renderOutreach,
+    'wa-command': renderWACommand,
     'insights': renderInsights,
   }
 
@@ -1893,6 +2112,44 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+      {/* ── MANUAL CHECK-IN MODAL ── */}
+      {manualCheckin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setManualCheckin(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="bg-blue-600 px-6 py-4 flex items-center justify-between">
+              <p className="text-white font-semibold">Manual Check-In</p>
+              <button onClick={() => setManualCheckin(false)} className="text-blue-200 hover:text-white"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-500">Check in a customer who didn&apos;t scan the QR — enter their phone to look up or create a new profile.</p>
+              <div>
+                <label className="text-xs text-gray-600 font-medium">Phone Number *</label>
+                <input type="text" placeholder="+91 98765 43210" className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500" />
+              </div>
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">MK</div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Meera Kapoor</p>
+                    <p className="text-xs text-gray-500">Gold · 7 visits · 2,450 pts</p>
+                  </div>
+                  <span className="ml-auto text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">Match found</span>
+                </div>
+              </div>
+              <div className="border-t border-gray-100 pt-3">
+                <p className="text-xs text-gray-500 font-medium mb-2">Or create new customer:</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label className="text-xs text-gray-500">Name</label><input type="text" placeholder="Full Name" className="mt-0.5 w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400" /></div>
+                  <div><label className="text-xs text-gray-500">Email</label><input type="text" placeholder="Optional" className="mt-0.5 w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-blue-400" /></div>
+                </div>
+              </div>
+              <button onClick={() => setManualCheckin(false)} className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700">Check In Customer</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── OUTREACH MODAL ── */}
       {outreachModal && (
