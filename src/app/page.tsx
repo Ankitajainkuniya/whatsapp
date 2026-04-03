@@ -68,10 +68,11 @@ const suggestedItems = [
 
 // ─── NAV ────────────────────────────────────────────────────────────────────
 
-type View = 'checkin-flow' | 'dashboard' | 'customer-detail' | 'rewards' | 'outreach' | 'insights'
+type View = 'checkin-flow' | 'repeat-flow' | 'dashboard' | 'customer-detail' | 'rewards' | 'outreach' | 'insights'
 
 const NAV = [
-  { label: 'Check-In Flow', icon: 'M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H9V11M15,11H17V13H15V11M19,11H21V13H19V11M1,21H23L12,10L1,21Z', view: 'checkin-flow' as View },
+  { label: 'New Customer', icon: 'M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H9V11M15,11H17V13H15V11M19,11H21V13H19V11M1,21H23L12,10L1,21Z', view: 'checkin-flow' as View },
+  { label: 'Repeat Customer', icon: 'M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z', view: 'repeat-flow' as View },
   { label: 'Dashboard', icon: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z', view: 'dashboard' as View },
   { label: 'Rewards', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z', view: 'rewards' as View },
   { label: 'Outreach', icon: 'M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z', view: 'outreach' as View },
@@ -94,6 +95,7 @@ export default function Dashboard() {
   const [selectedCustomer, setSelectedCustomer] = useState<typeof mockCustomers[0] | null>(null)
   const [customerTab, setCustomerTab] = useState<'profile' | 'journey' | 'assist' | 'billing'>('profile')
   const [checkinStep, setCheckinStep] = useState<1 | 2 | 3 | 4>(1)
+  const [repeatStep, setRepeatStep] = useState<1 | 2 | 3 | 4>(1)
   const [taggedItems, setTaggedItems] = useState<string[]>([])
   const [staffNote, setStaffNote] = useState('')
   const [pointsApplied, setPointsApplied] = useState(false)
@@ -427,6 +429,359 @@ export default function Dashboard() {
             <button onClick={() => setActiveView('dashboard')}
               className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
               <span>Go to Dashboard</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── REPEAT CUSTOMER FLOW (Tier B — Quick Confirm) ──────────────────────────
+
+  const renderRepeatFlow = () => {
+    const rc = mockCustomers[0] // Meera Kapoor as the repeat customer
+    const steps = [
+      { n: 1 as const, label: 'Customer Scans QR' },
+      { n: 2 as const, label: 'Instant Recognition' },
+      { n: 3 as const, label: 'Personalized Welcome' },
+      { n: 4 as const, label: 'Staff Gets Rich Brief' },
+    ]
+    return (
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Repeat Customer Flow</h1>
+        <p className="text-gray-500 text-sm mb-5">When a known customer scans the QR again — zero forms, instant recognition, personalized welcome.</p>
+
+        {/* Step indicator */}
+        <div className="flex items-center space-x-2 mb-6">
+          {steps.map((s, i) => (
+            <div key={s.n} className="flex items-center">
+              <button onClick={() => setRepeatStep(s.n)}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${repeatStep === s.n ? 'bg-blue-600 text-white' : repeatStep > s.n ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${repeatStep === s.n ? 'bg-white text-blue-600' : repeatStep > s.n ? 'bg-blue-600 text-white' : 'bg-gray-300 text-white'}`}>{repeatStep > s.n ? '✓' : s.n}</span>
+                <span>{s.label}</span>
+              </button>
+              {i < steps.length - 1 && <div className={`w-8 h-0.5 mx-1 ${repeatStep > s.n ? 'bg-blue-400' : 'bg-gray-200'}`} />}
+            </div>
+          ))}
+        </div>
+
+        {/* ── Step 1: Scans QR ── */}
+        {repeatStep === 1 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">Meera Scans the Store QR — Again</h2>
+              <p className="text-gray-500 text-sm mb-5">This is her 8th visit. She scans the same QR at the entrance. But this time, the system already knows who she is.</p>
+              <div className="space-y-3">
+                {[
+                  { icon: '🔍', title: 'Phone / Browser Fingerprint Match', desc: 'System detects her instantly from the last check-in — no form needed' },
+                  { icon: '⚡', title: 'Zero Fields, Zero Friction', desc: 'She never sees the registration form again. Straight to welcome.' },
+                  { icon: '🧠', title: 'Full Context Loaded', desc: 'Tier, points, wishlist, occasions, staff notes — all recalled in milliseconds' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start space-x-3 border border-gray-200 rounded-lg p-3">
+                    <span className="text-xl flex-shrink-0">{item.icon}</span>
+                    <div><p className="font-semibold text-gray-900 text-sm">{item.title}</p><p className="text-gray-500 text-xs mt-0.5">{item.desc}</p></div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 bg-blue-50 border border-blue-100 rounded-xl p-4">
+                <p className="text-sm font-semibold text-blue-800">New Customer vs Repeat — The Difference</p>
+                <div className="grid grid-cols-2 gap-3 mt-3 text-xs">
+                  <div className="bg-white rounded-lg p-3 border border-gray-200">
+                    <p className="font-semibold text-gray-500 mb-1">New Customer</p>
+                    <p className="text-gray-700">Full form → 30 seconds</p>
+                    <p className="text-gray-400">Name, phone, email, IG, preferences</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 border border-blue-300">
+                    <p className="font-semibold text-blue-600 mb-1">Repeat Customer</p>
+                    <p className="text-gray-700">One tap → 3 seconds</p>
+                    <p className="text-gray-400">Auto-recognized, confirm &amp; go</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="w-72 bg-gray-900 rounded-3xl p-3 shadow-2xl">
+                <div className="bg-white rounded-2xl overflow-hidden">
+                  <div className="bg-gray-800 px-4 py-1.5 flex justify-between"><span className="text-white text-xs">10:31 AM</span><span className="text-white text-xs">●●●</span></div>
+                  <div className="p-8 text-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+                    <p className="text-blue-600 font-bold italic mb-2">modenX</p>
+                    <p className="text-sm font-medium text-gray-700">Recognizing you...</p>
+                    <p className="text-xs text-gray-400 mt-1">Matching phone number</p>
+                    <div className="mt-4 flex justify-center space-x-1">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 2: Quick Confirm ── */}
+        {repeatStep === 2 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">Instant Recognition — One-Tap Confirm</h2>
+              <p className="text-gray-500 text-sm mb-5">System matches her phone. Instead of a form, she sees a pre-filled card with her profile. One tap and she&apos;s checked in.</p>
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
+                <p className="text-sm font-semibold text-blue-800 mb-2">What Gets Loaded Automatically</p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {[
+                    '🏆 Tier: Gold Member',
+                    '💰 Points: 2,450 (₹245 value)',
+                    '🛍️ Prefers: Ethnic Wear, Accessories',
+                    '📅 Occasion: Wedding (May 2026)',
+                    '❤️ Wishlist: Chanderi Dupatta',
+                    '📝 Staff Note: Prefers muted tones',
+                  ].map((item, i) => (
+                    <div key={i} className="bg-white rounded px-2 py-1.5 text-gray-700">{item}</div>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">She can also update her email or Instagram if she hasn&apos;t shared them yet — but it&apos;s optional, not blocking.</p>
+            </div>
+            <div className="flex justify-center">
+              <div className="w-72 bg-gray-900 rounded-3xl p-3 shadow-2xl">
+                <div className="bg-white rounded-2xl overflow-hidden">
+                  <div className="bg-gray-800 px-4 py-1.5 flex justify-between"><span className="text-white text-xs">10:31 AM</span><span className="text-white text-xs">●●●</span></div>
+                  <div className="p-5">
+                    <p className="text-blue-600 font-bold italic text-center mb-3">modenX</p>
+                    <div className="text-center mb-4">
+                      <p className="text-sm text-gray-500">Welcome back!</p>
+                      <p className="text-lg font-bold text-gray-900">Is this you?</p>
+                    </div>
+                    {/* Profile card */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-3">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">MK</div>
+                        <div>
+                          <p className="font-bold text-gray-900 text-sm">{rc.name}</p>
+                          <p className="text-xs text-gray-500">{rc.phone}</p>
+                        </div>
+                        <span className="ml-auto text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">🏆 Gold</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-white rounded px-2 py-1.5"><span className="text-gray-400">Points</span><p className="font-semibold text-gray-900">2,450 pts</p></div>
+                        <div className="bg-white rounded px-2 py-1.5"><span className="text-gray-400">Visits</span><p className="font-semibold text-gray-900">7 times</p></div>
+                      </div>
+                    </div>
+                    <button className="w-full bg-blue-600 text-white text-sm font-bold py-2.5 rounded-xl mb-2">Yes, Check Me In ✓</button>
+                    <button className="w-full text-xs text-blue-600 py-1.5 hover:underline">Not me? Use a different number</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 3: Personalized Welcome ── */}
+        {repeatStep === 3 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">Personalized Welcome — Not Generic</h2>
+              <p className="text-gray-500 text-sm mb-5">After one tap, Meera sees a welcome screen tailored to HER — with active offers, wishlist alerts, and her points balance. Plus, auto-triggers fire behind the scenes.</p>
+              <div className="border border-gray-200 rounded-xl p-4 mb-4">
+                <p className="font-semibold text-gray-900 text-sm mb-3">Auto-Triggers on Check-In</p>
+                <div className="space-y-2">
+                  {[
+                    { icon: '💬', trigger: 'Welcome Back WhatsApp sent', detail: '"Hi Meera! 15% OFF today as our Gold member. Show at billing."' },
+                    { icon: '❤️', trigger: 'Wishlist stock matched', detail: 'Chanderi Dupatta is in stock → shown on welcome screen' },
+                    { icon: '🏆', trigger: 'Visit streak bonus applied', detail: '+50 bonus points for 3rd visit this month' },
+                    { icon: '📅', trigger: 'Occasion surfaced to staff', detail: '"Wedding in May — show bridal collection"' },
+                  ].map((t, i) => (
+                    <div key={i} className="flex items-start space-x-3 bg-blue-50 rounded-lg p-3">
+                      <span className="text-lg flex-shrink-0">{t.icon}</span>
+                      <div>
+                        <p className="font-medium text-gray-900 text-xs">{t.trigger}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{t.detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="w-72 bg-gray-900 rounded-3xl p-3 shadow-2xl">
+                <div className="bg-white rounded-2xl overflow-hidden">
+                  <div className="bg-gray-800 px-4 py-1.5 flex justify-between"><span className="text-white text-xs">10:32 AM</span><span className="text-white text-xs">●●●</span></div>
+                  <div className="p-4">
+                    <div className="text-center mb-3">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                      </div>
+                      <p className="text-blue-600 font-bold italic text-sm">modenX</p>
+                      <p className="text-lg font-bold text-gray-900">Welcome back, Meera!</p>
+                    </div>
+
+                    {/* Tier + Points */}
+                    <div className="bg-blue-600 text-white rounded-xl p-3 mb-3 text-center">
+                      <p className="text-xs text-blue-200">🏆 Gold Member · Visit #8</p>
+                      <p className="text-2xl font-black mt-0.5">2,500 pts</p>
+                      <p className="text-xs text-blue-200">₹250 redeemable today</p>
+                    </div>
+
+                    {/* Active offer */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-2">
+                      <p className="text-xs font-bold text-blue-700">🎉 TODAY&apos;S OFFER</p>
+                      <p className="text-sm font-bold text-gray-900 mt-0.5">15% OFF (Gold Exclusive)</p>
+                      <p className="text-xs text-gray-500">+ Weekend Double Points active</p>
+                    </div>
+
+                    {/* Wishlist alert */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-3 mb-2">
+                      <p className="text-xs font-bold text-gray-700">❤️ FROM YOUR WISHLIST</p>
+                      <p className="text-sm text-gray-900 mt-0.5">Chanderi Dupatta — <span className="text-blue-600 font-semibold">In Stock!</span></p>
+                    </div>
+
+                    {/* Visit purpose */}
+                    <p className="text-xs text-gray-500 text-center mb-2">What brings you in today?</p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {['Wedding Shopping', 'Just Browsing', 'Redeem Points', 'Returns'].map(p => (
+                        <button key={p} className="text-xs border border-gray-200 rounded-lg py-1.5 text-gray-700 hover:bg-blue-50 hover:border-blue-300">{p}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 4: Staff Rich Brief ── */}
+        {repeatStep === 4 && (
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">Staff Gets a Rich Customer Brief</h2>
+            <p className="text-gray-500 text-sm mb-5">The moment Meera checks in, her staff sees everything they need to deliver a personalized experience — before they even approach her.</p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {/* Staff notification */}
+              <div className="lg:col-span-2 border-2 border-blue-600 rounded-2xl overflow-hidden">
+                <div className="bg-blue-600 px-5 py-3 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                    <p className="text-white font-semibold text-sm">🔔 Returning Customer Alert</p>
+                  </div>
+                  <span className="text-blue-200 text-xs">Just now</span>
+                </div>
+                <div className="p-5">
+                  {/* Identity */}
+                  <div className="flex items-center space-x-4 mb-4 pb-4 border-b border-gray-100">
+                    <div className="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-xl">MK</div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <p className="text-lg font-bold text-gray-900">{rc.name}</p>
+                        <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">🏆 Gold</span>
+                      </div>
+                      <p className="text-sm text-gray-500">{rc.phone} · Visit #8 · Lifetime: {rc.totalSpend}</p>
+                      <div className="flex items-center space-x-1 mt-1">
+                        {['💬', '📱', '📧', '📸'].map((ch, j) => <span key={j} className="text-sm">{ch}</span>)}
+                        <span className="text-xs text-gray-400 ml-1">All channels connected</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-black text-blue-600">{rc.points.toLocaleString()}</p>
+                      <p className="text-xs text-gray-400">reward points</p>
+                    </div>
+                  </div>
+
+                  {/* Context grid */}
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 mb-1.5">🛍️ PREFERENCES</p>
+                      <div className="flex flex-wrap gap-1">
+                        {rc.preferences.map(p => <span key={p} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{p}</span>)}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 mb-1.5">📅 HERE FOR</p>
+                      <p className="text-sm font-medium text-gray-900">{rc.occasions[0]}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Selected at check-in</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 mb-1.5">🕐 LAST PURCHASE</p>
+                      <p className="text-sm font-medium text-gray-900">{rc.lastPurchase}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{rc.lastVisit}</p>
+                    </div>
+                  </div>
+
+                  {/* Wishlist + Staff Note */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+                      <p className="text-xs font-semibold text-blue-700 mb-1.5">❤️ WISHLIST (IN STOCK)</p>
+                      {rc.wishlist.map(w => (
+                        <div key={w} className="flex items-center space-x-2 text-sm text-gray-900 mb-1">
+                          <span className="text-blue-500">✓</span><span>{w}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3">
+                      <p className="text-xs font-semibold text-gray-600 mb-1.5">📝 STAFF NOTE (LAST VISIT)</p>
+                      <p className="text-sm text-gray-700 italic">&ldquo;{rc.notes}&rdquo;</p>
+                    </div>
+                  </div>
+
+                  {/* Suggested greeting */}
+                  <div className="bg-gray-900 text-white rounded-xl p-4">
+                    <p className="text-xs text-gray-400 mb-1">💡 SUGGESTED GREETING</p>
+                    <p className="text-sm leading-relaxed">&ldquo;Welcome back, Meera! The Chanderi Dupatta you were eyeing is in aisle 3. And since you&apos;re shopping for the wedding — we just got a new bridal collection you&apos;ll love.&rdquo;</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: actions */}
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-3">Quick Staff Actions</p>
+                  <div className="space-y-2">
+                    <button onClick={() => openCustomer(rc, 'assist')} className="w-full text-left text-xs px-3 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">🛍️ Start In-Store Assist</button>
+                    <button onClick={() => openCustomer(rc)} className="w-full text-left text-xs px-3 py-2.5 border border-gray-200 rounded-lg hover:bg-blue-50">👤 View Full Profile</button>
+                    <button onClick={() => openCustomer(rc, 'billing')} className="w-full text-left text-xs px-3 py-2.5 border border-gray-200 rounded-lg hover:bg-blue-50">🧾 Quick Bill</button>
+                    <button onClick={() => openOutreach(rc)} className="w-full text-left text-xs px-3 py-2.5 border border-gray-200 rounded-lg hover:bg-blue-50">📡 Send Message</button>
+                  </div>
+                </div>
+                <div className="border border-blue-100 bg-blue-50 rounded-xl p-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-2">Auto-Actions Fired</p>
+                  <div className="space-y-1.5">
+                    {[
+                      '✅ Welcome WhatsApp sent',
+                      '✅ 15% Gold offer applied',
+                      '✅ Weekend 2x points active',
+                      '✅ +50 visit streak bonus',
+                      '✅ Wishlist stock matched',
+                    ].map((a, i) => (
+                      <p key={i} className="text-xs text-blue-700">{a}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Nav buttons */}
+        <div className="flex items-center justify-between mt-8 pt-5 border-t border-gray-200">
+          <button onClick={() => repeatStep > 1 && setRepeatStep((repeatStep - 1) as any)} disabled={repeatStep === 1}
+            className="flex items-center space-x-2 px-4 py-2 rounded-lg border-2 border-blue-600 text-blue-600 text-sm font-medium hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <span>Previous</span>
+          </button>
+          <span className="text-sm text-gray-400">Step {repeatStep} of 4</span>
+          {repeatStep < 4 ? (
+            <button onClick={() => setRepeatStep((repeatStep + 1) as any)}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+              <span>Next</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          ) : (
+            <button onClick={() => { setSelectedCustomer(rc); setActiveView('customer-detail'); setCustomerTab('profile') }}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+              <span>Open Meera&apos;s Profile</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
           )}
@@ -1158,6 +1513,7 @@ export default function Dashboard() {
 
   const views: Record<View, () => JSX.Element | null> = {
     'checkin-flow': renderCheckinFlow,
+    'repeat-flow': renderRepeatFlow,
     'dashboard': renderDashboard,
     'customer-detail': renderCustomerDetail,
     'rewards': renderRewards,
