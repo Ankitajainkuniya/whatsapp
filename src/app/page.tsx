@@ -1523,126 +1523,182 @@ export default function Dashboard() {
 
   // ── INSIGHTS ──────────────────────────────────────────────────────────────
 
-  const InsightCard = ({ label, value, hasFilter = true }: { label: string; value: string; hasFilter?: boolean }) => (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-between min-h-36">
-      <div className="flex items-start justify-between">
-        <p className="text-gray-600 text-sm font-medium leading-tight">{label}</p>
-        {hasFilter && (
-          <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
-            <div className="flex items-center space-x-0.5">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-              <span className="bg-blue-400 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">1</span>
-            </div>
-            <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
-          </div>
-        )}
-      </div>
-      <p className="text-4xl font-black text-gray-900 mt-3">{value}</p>
-    </div>
-  )
-
   const renderInsights = () => (
     <div>
-      {/* Market & Competitor Landscape */}
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Market &amp; Competitor Landscape</h2>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <InsightCard label="Total Engaged Customers" value="400" />
-        <InsightCard label="Avg Visit by A Customer" value="2.00" />
-        <InsightCard label="Total Marketable Customers" value="1.83M" />
-        <InsightCard label="Total Competitors" value="500" />
+      {/* ── Hero ROI Banner ── */}
+      <div className="bg-blue-600 rounded-2xl p-6 mb-6 flex items-center justify-between">
+        <div>
+          <p className="text-blue-200 text-xs font-medium uppercase tracking-wider">Platform Performance — This Month</p>
+          <p className="text-white text-2xl font-black mt-1">₹12.1L Revenue Attributed</p>
+          <p className="text-blue-200 text-sm mt-1">Across 5 channels · 1,973 messages sent · 214 walk-ins this week</p>
+        </div>
+        <div className="text-right">
+          <p className="text-6xl font-black text-white">41x</p>
+          <p className="text-blue-200 text-sm">ROI on every ₹1 spent</p>
+        </div>
       </div>
 
-      {/* Your Business Performance */}
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Your Business Performance and Insights</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <InsightCard label="Your Total Customers" value="1,248" />
-        <InsightCard label="Your Customer Visit Count" value="4,720" />
-        <InsightCard label="Avg Visits by Customers" value="3.78" />
-      </div>
-
-      {/* Customer Journey Funnel */}
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Customer Journey Funnel</h2>
-      <div className="grid grid-cols-5 gap-4 mb-8">
+      {/* ── Market & Competitor Landscape ── */}
+      <h2 className="text-lg font-bold text-gray-900 mb-3">Market &amp; Competitor Landscape</h2>
+      <div className="grid grid-cols-4 gap-3 mb-6">
         {[
-          { label: 'Walk-Ins', value: '214' },
-          { label: 'Profiles Captured', value: '198' },
-          { label: 'Staff Assisted', value: '143' },
-          { label: 'Purchased', value: '97' },
-          { label: 'Returned Again', value: '61' },
-        ].map((s, i) => (
+          { label: 'Total Engaged Customers', value: '400', change: '+12%', up: true },
+          { label: 'Avg Visit by A Customer', value: '2.00', change: '+0.3', up: true },
+          { label: 'Total Marketable Customers', value: '1.83M', change: '+2.1%', up: true },
+          { label: 'Total Competitors', value: '500', change: '+8', up: false },
+        ].map((c, i) => (
           <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
-            <p className="text-gray-600 text-sm font-medium mb-3">{s.label}</p>
-            <p className="text-3xl font-black text-gray-900">{s.value}</p>
-            {i < 4 && (
-              <div className="mt-2">
-                <div className="w-full bg-blue-50 rounded-full h-1.5">
-                  <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${[100, 92, 67, 45, 28][i]}%` }} />
-                </div>
-                <p className="text-xs text-gray-400 mt-1">{[100, 92, 67, 45, 28][i]}% of walk-ins</p>
-              </div>
-            )}
+            <div className="flex items-start justify-between mb-3">
+              <p className="text-gray-500 text-xs font-medium leading-tight">{c.label}</p>
+              <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${c.up ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                {c.up ? '↑' : '→'} {c.change}
+              </span>
+            </div>
+            <p className="text-3xl font-black text-gray-900">{c.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Channel Performance & Loyalty */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+      {/* ── Your Business Performance ── */}
+      <h2 className="text-lg font-bold text-gray-900 mb-3">Your Business Performance</h2>
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        {[
+          { label: 'Your Total Customers', value: '1,248', change: '+18%', sub: 'vs last month' },
+          { label: 'Total Visit Count', value: '4,720', change: '+24%', sub: 'vs last month' },
+          { label: 'Avg Visits per Customer', value: '3.78', change: '+0.4', sub: 'improving retention' },
+        ].map((c, i) => (
+          <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
+            <p className="text-gray-500 text-xs font-medium mb-1">{c.label}</p>
+            <div className="flex items-end space-x-2">
+              <p className="text-3xl font-black text-gray-900">{c.value}</p>
+              <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded mb-1">↑ {c.change}</span>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">{c.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Customer Journey Funnel (visual) ── */}
+      <h2 className="text-lg font-bold text-gray-900 mb-3">Customer Journey Funnel</h2>
+      <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6">
+        <div className="flex items-end space-x-1 mb-4" style={{ height: '120px' }}>
+          {[
+            { label: 'Walk-In', value: 214, pct: 100 },
+            { label: 'Profile', value: 198, pct: 92 },
+            { label: 'Assisted', value: 143, pct: 67 },
+            { label: 'Purchased', value: 97, pct: 45 },
+            { label: 'Returned', value: 61, pct: 28 },
+          ].map((s, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
+              <p className="text-lg font-black text-blue-600 mb-1">{s.value}</p>
+              <div className="w-full rounded-t-lg bg-blue-600 transition-all" style={{ height: `${s.pct}%`, opacity: 1 - i * 0.15 }} />
+            </div>
+          ))}
+        </div>
+        <div className="flex space-x-1">
+          {['Walk-In', 'Profile Captured', 'Staff Assisted', 'Purchased', 'Returned Again'].map((l, i) => (
+            <div key={i} className="flex-1 text-center">
+              <p className="text-xs text-gray-500 font-medium">{l}</p>
+              <p className="text-xs text-gray-400">{[100, 92, 67, 45, 28][i]}%</p>
+            </div>
+          ))}
+        </div>
+        {/* Drop-off indicators */}
+        <div className="flex space-x-1 mt-3 border-t border-gray-100 pt-3">
+          {[
+            { from: 'Walk-In → Profile', drop: '8%', note: '16 left without checking in' },
+            { from: 'Profile → Assisted', drop: '28%', note: '55 browsed on their own' },
+            { from: 'Assisted → Purchased', drop: '32%', note: '46 did not buy' },
+            { from: 'Purchased → Returned', drop: '37%', note: '36 haven\'t come back yet' },
+          ].map((d, i) => (
+            <div key={i} className="flex-1 text-center">
+              <p className="text-xs font-semibold text-gray-700">{d.drop} drop</p>
+              <p className="text-xs text-gray-400">{d.note}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Channel Performance + Loyalty side by side ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
         {/* Channel Performance */}
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Outreach Channel Performance</h2>
-          <div className="grid grid-cols-1 gap-3">
+          <h2 className="text-lg font-bold text-gray-900 mb-3">Outreach Channel Performance</h2>
+          <div className="space-y-2">
             {[
-              { ch: '💬 WhatsApp', sent: '847', cvr: '41%', rev: '₹5.8L' },
-              { ch: '📧 Email', sent: '534', cvr: '18%', rev: '₹2.1L' },
-              { ch: '📸 Instagram DM', sent: '186', cvr: '32%', rev: '₹1.7L' },
-              { ch: '📱 SMS', sent: '312', cvr: '28%', rev: '₹1.9L' },
-              { ch: '💎 RCS', sent: '94', cvr: '22%', rev: '₹0.6L' },
+              { ch: '💬 WhatsApp', sent: 847, cvr: 41, rev: '₹5.8L', bar: 100 },
+              { ch: '📧 Email', sent: 534, cvr: 18, rev: '₹2.1L', bar: 36 },
+              { ch: '📱 SMS', sent: 312, cvr: 28, rev: '₹1.9L', bar: 33 },
+              { ch: '📸 Instagram DM', sent: 186, cvr: 32, rev: '₹1.7L', bar: 29 },
+              { ch: '💎 RCS', sent: 94, cvr: 22, rev: '₹0.6L', bar: 10 },
             ].map((c) => (
-              <div key={c.ch} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{c.ch}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{c.sent} sent · {c.cvr} conversion</p>
+              <div key={c.ch} className="bg-white border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm font-semibold text-gray-900">{c.ch}</p>
+                    <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">{c.cvr}% CVR</span>
+                  </div>
+                  <p className="text-xl font-black text-blue-600">{c.rev}</p>
                 </div>
-                <p className="text-2xl font-black text-gray-900">{c.rev}</p>
+                <div className="w-full bg-blue-50 rounded-full h-2">
+                  <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${c.bar}%` }} />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">{c.sent} sent this month</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Loyalty Breakdown */}
+        {/* Loyalty + Rewards Impact */}
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Loyalty Tier Breakdown</h2>
-          <div className="grid grid-cols-1 gap-3">
+          <h2 className="text-lg font-bold text-gray-900 mb-3">Loyalty &amp; Rewards Impact</h2>
+
+          {/* Tier cards */}
+          <div className="space-y-2 mb-3">
             {[
-              { tier: 'Platinum', count: '12', avg: '₹1.2L avg spend', pct: 80 },
-              { tier: 'Gold', count: '48', avg: '₹38K avg spend', pct: 55 },
-              { tier: 'Silver', count: '154', avg: '₹12K avg spend', pct: 30 },
+              { tier: 'Platinum', count: 12, customers: '6%', avg: '₹1.2L', ltv: '₹14.4L', color: 'border-l-blue-800' },
+              { tier: 'Gold', count: 48, customers: '22%', avg: '₹38K', ltv: '₹18.2L', color: 'border-l-blue-600' },
+              { tier: 'Silver', count: 154, customers: '72%', avg: '₹12K', ltv: '₹18.5L', color: 'border-l-blue-300' },
             ].map(t => (
-              <div key={t.tier} className="bg-white border border-gray-200 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${tierBadge(t.tier)}`}>{t.tier}</span>
-                    <span className="text-xs text-gray-500">{t.avg}</span>
+              <div key={t.tier} className={`bg-white border border-gray-200 border-l-4 ${t.color} rounded-xl p-4`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${tierBadge(t.tier)}`}>{t.tier}</span>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{t.count} customers <span className="text-gray-400 font-normal">({t.customers})</span></p>
+                      <p className="text-xs text-gray-500">{t.avg} avg spend per customer</p>
+                    </div>
                   </div>
-                  <p className="text-2xl font-black text-gray-900">{t.count}</p>
-                </div>
-                <div className="w-full bg-blue-50 rounded-full h-1.5">
-                  <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${t.pct}%` }} />
+                  <div className="text-right">
+                    <p className="text-lg font-black text-gray-900">{t.ltv}</p>
+                    <p className="text-xs text-gray-400">total LTV</p>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* ROI card */}
-          <div className="bg-blue-600 rounded-xl p-5 mt-3 flex items-center justify-between">
+          {/* Rewards stats */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="bg-white border border-gray-200 rounded-xl p-3">
+              <p className="text-xs text-gray-500">Points Issued (30d)</p>
+              <p className="text-xl font-black text-gray-900">48,200</p>
+              <p className="text-xs text-blue-600 font-medium">↑ 14% vs prior month</p>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-xl p-3">
+              <p className="text-xs text-gray-500">Points Redeemed (30d)</p>
+              <p className="text-xl font-black text-gray-900">12,400</p>
+              <p className="text-xs text-gray-400">25.7% redemption rate</p>
+            </div>
+          </div>
+
+          {/* Total LTV */}
+          <div className="bg-blue-600 rounded-xl p-4 flex items-center justify-between">
             <div>
-              <p className="text-blue-200 text-xs font-medium">Platform ROI — All 5 Channels</p>
-              <p className="text-blue-100 text-xs mt-0.5">Total attributed revenue this month</p>
+              <p className="text-blue-200 text-xs">Total Customer Lifetime Value</p>
+              <p className="text-blue-100 text-xs mt-0.5">214 active customers · all tiers</p>
             </div>
-            <div className="text-right">
-              <p className="text-4xl font-black text-white">41x</p>
-              <p className="text-blue-200 text-xs">return on spend</p>
-            </div>
+            <p className="text-3xl font-black text-white">₹51.1L</p>
           </div>
         </div>
       </div>
