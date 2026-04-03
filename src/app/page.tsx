@@ -2,136 +2,105 @@
 
 import { useState } from 'react'
 
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
 const mockCustomers = [
   {
-    id: 'C001',
-    name: 'Priya Sharma',
-    phone: '+91 98765 43210',
-    checkInTime: '10:32 AM',
-    visits: 7,
-    lastVisit: '12 Mar 2026',
-    preferences: ['Ethnic Wear', 'Accessories'],
-    tier: 'Gold',
-    points: 2450,
-    avatar: 'PS',
+    id: 'C001', name: 'Meera Kapoor', phone: '+91 98765 43210', checkInTime: '10:32 AM',
+    email: 'meera.kapoor@gmail.com', instagram: '@meera.stylefiles',
+    channels: { whatsapp: true, sms: true, email: true, instagram: true },
+    visits: 7, lastVisit: '12 Mar 2026', lastPurchase: 'Banarasi Silk Saree — ₹4,200',
+    preferences: ['Ethnic Wear', 'Accessories'], wishlist: ['Chanderi Dupatta', 'Kundan Earrings'],
+    occasions: ['Wedding (May 2026)', 'Diwali'], tier: 'Gold', points: 2450, totalSpend: '₹38,400',
+    avatar: 'MK', notes: 'Prefers muted tones. Usually shops with her mother.',
+    purchases: [
+      { item: 'Banarasi Silk Saree', amount: 4200, date: '12 Mar 2026' },
+      { item: 'Zardozi Clutch', amount: 1800, date: '18 Jan 2026' },
+      { item: 'Cotton Kurta Set', amount: 2400, date: '02 Dec 2025' },
+    ],
   },
   {
-    id: 'C002',
-    name: 'Rahul Mehta',
-    phone: '+91 87654 32109',
-    checkInTime: '11:05 AM',
-    visits: 3,
-    lastVisit: '01 Feb 2026',
-    preferences: ['Formals', 'Footwear'],
-    tier: 'Silver',
-    points: 870,
-    avatar: 'RM',
+    id: 'C002', name: 'Vikram Sinha', phone: '+91 87654 32109', checkInTime: '11:05 AM',
+    email: 'vikram.sinha@outlook.com', instagram: '',
+    channels: { whatsapp: true, sms: true, email: true, instagram: false },
+    visits: 3, lastVisit: '01 Feb 2026', lastPurchase: 'Slim Fit Blazer — ₹3,800',
+    preferences: ['Formals', 'Footwear'], wishlist: ['Oxford Shoes', 'Linen Trousers'],
+    occasions: ['Office Wear', 'Engagement (Jun 2026)'], tier: 'Silver', points: 870, totalSpend: '₹11,200',
+    avatar: 'VS', notes: 'Prefers western formals. Size 40 shirt, 32 waist.',
+    purchases: [
+      { item: 'Slim Fit Blazer', amount: 3800, date: '01 Feb 2026' },
+      { item: 'White Formal Shirt', amount: 1600, date: '15 Nov 2025' },
+    ],
   },
   {
-    id: 'C003',
-    name: 'Ananya Iyer',
-    phone: '+91 76543 21098',
-    checkInTime: '11:48 AM',
-    visits: 14,
-    lastVisit: '28 Mar 2026',
-    preferences: ['Western', 'Bags', 'Jewellery'],
-    tier: 'Platinum',
-    points: 5200,
-    avatar: 'AI',
+    id: 'C003', name: 'Zara Deshpande', phone: '+91 76543 21098', checkInTime: '11:48 AM',
+    email: 'zara.deshpande@gmail.com', instagram: '@zara.ootd',
+    channels: { whatsapp: true, sms: true, email: true, instagram: true },
+    visits: 14, lastVisit: '28 Mar 2026', lastPurchase: 'Indo-Western Co-ord Set — ₹5,600',
+    preferences: ['Western', 'Bags', 'Jewellery'], wishlist: ['Tote Bag', 'Block Print Kurta'],
+    occasions: ['Casual', 'Birthday (Apr 2026)'], tier: 'Platinum', points: 5200, totalSpend: '₹92,000',
+    avatar: 'ZD', notes: 'Top spender. Loves discovering new arrivals. Very decisive.',
+    purchases: [
+      { item: 'Indo-Western Co-ord Set', amount: 5600, date: '28 Mar 2026' },
+      { item: 'Silver Cuff Bracelet', amount: 2200, date: '10 Mar 2026' },
+      { item: 'Embroidered Tote', amount: 3400, date: '14 Feb 2026' },
+      { item: 'Pashmina Shawl', amount: 6800, date: '25 Dec 2025' },
+    ],
   },
 ]
 
-const whatsappTemplates = [
-  {
-    id: 'T001',
-    name: 'Welcome Back Offer',
-    category: 'MARKETING',
-    body: "Hi {{name}}! Welcome back to MODENX {{store}}. As our valued {{tier}} member, here's an exclusive *15% OFF* on your purchase today. Valid till end of day. Show this message at billing.",
-  },
-  {
-    id: 'T002',
-    name: 'New Arrivals Alert',
-    category: 'MARKETING',
-    body: 'Hey {{name}}! We know you love {{preference}}. Check out our latest arrivals — freshly stocked just for you. Visit us in-store or browse at modenx.in. Reply STOP to opt out.',
-  },
-  {
-    id: 'T003',
-    name: 'Loyalty Points Reminder',
-    category: 'TRANSACTIONAL',
-    body: 'Hi {{name}}, you have *{{points}} reward points* ready to redeem at MODENX! That\'s ₹{{points_value}} off on your next purchase. Visit us soon before they expire on {{expiry}}.',
-  },
-  {
-    id: 'T004',
-    name: 'Post Visit Thank You',
-    category: 'CUSTOMER_SERVICE',
-    body: 'Thank you for visiting MODENX, {{name}}! We hope you loved your experience. Rate us ⭐⭐⭐⭐⭐ and earn 50 bonus points. Tap: modenx.in/review',
-  },
+const outreachTemplates = [
+  { id: 'T001', channel: 'WhatsApp', name: 'Welcome Back Offer', body: "Hi {{name}}! Great seeing you at MODENX today. As our {{tier}} member, enjoy *15% OFF* on your purchase. Show this at billing!" },
+  { id: 'T002', channel: 'WhatsApp', name: 'Wishlist Back in Stock', body: 'Hey {{name}}! Good news — {{wishlist_item}} is back in stock at MODENX. Drop by or reply to reserve!' },
+  { id: 'T003', channel: 'SMS', name: 'Points Reminder', body: 'Hi {{name}}, you have {{points}} pts (worth Rs.{{points_value}}) at MODENX! Use before {{expiry}}. Reply STOP to opt out.' },
+  { id: 'T004', channel: 'Email', name: 'Monthly Lookbook', body: 'Hi {{name}}, your personalised MODENX lookbook for this month is here! Based on your love for {{wishlist_item}} — we have curated 8 new picks. Open the email to explore.' },
+  { id: 'T005', channel: 'Instagram DM', name: 'New Arrivals Drop', body: 'Hey {{name}}! 👋 Just dropped fresh arrivals in your fav category. Swipe through our latest story highlights or DM us to reserve your picks! 🛍️' },
+  { id: 'T006', channel: 'RCS', name: 'Loyalty Upgrade', body: 'Congrats {{name}}! 🎉 You are now a {{tier}} member at MODENX. Tap below to view your exclusive perks and redeem {{points}} reward points.' },
+  { id: 'T007', channel: 'WhatsApp', name: 'Post-Visit Thank You', body: 'Thank you for visiting MODENX, {{name}}! Rate us ⭐⭐⭐⭐⭐ and earn 50 bonus points: modenx.in/review' },
 ]
 
-const NAV_ITEMS: { label: string; icon: string; step: Step | null }[] = [
-  { label: 'Home - Live Customer', icon: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z', step: 'retailer-dashboard' },
-  { label: 'Manage Brand/Stores', icon: 'M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v10z', step: null },
-  { label: 'Manage Rewards', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z', step: null },
-  { label: 'Download QR Code', icon: 'M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H9V11M15,11H17V13H15V11M19,11H21V13H19V11M1,21H23L12,10L1,21Z', step: 'checkin-qr' },
-  { label: 'Insights', icon: 'M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z', step: 'analytics' },
-  { label: 'Marketing Campaigns', icon: 'M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V22H19V19H5V22H3V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M14,9H10A5,5 0 0,0 5,14H19A5,5 0 0,0 14,9Z', step: null },
-  { label: 'WhatsApp Campaigns', icon: 'M17.472,14.382c-0.297,0.297-0.626,0.569-0.987,0.816c-1.158,0.795-2.517,1.219-3.935,1.227c-1.415,0.008-2.86-0.396-4.115-1.146l-3.77,0.988l1.009-3.678c-0.764-1.264-1.148-2.696-1.117-4.135c0.031-1.438,0.466-2.852,1.264-4.098c0.797-1.246,1.933-2.31,3.292-3.088c1.359-0.778,2.905-1.152,4.477-1.084c1.572,0.068,3.08,0.578,4.366,1.477c1.286,0.899,2.315,2.158,2.983,3.647c0.668,1.489,0.859,3.146,0.552,4.801C19.177,12.106,18.557,13.294,17.472,14.382z', step: 'whatsapp-select' },
-  { label: 'Manage Greetings', icon: 'M20,4V16H8.91L7.14,17.77C7.06,17.85 6.96,17.91 6.84,17.91H6.8C6.57,17.91 6.4,17.74 6.4,17.5V16H4A2,2 0 0,1 2,14V4A2,2 0 0,1 4,2H18A2,2 0 0,1 20,4Z', step: null },
-  { label: 'Payments & Invoices', icon: 'M11.8,10.9C9.53,10.31 8.8,9.7 8.8,8.75C8.8,7.66 9.81,6.9 11.5,6.9C13.28,6.9 13.94,7.75 14,9H16.21C16.14,7.28 15.09,5.7 13,5.19V3H10V5.16C8.06,5.58 6.5,6.84 6.5,8.77C6.5,11.08 8.41,12.23 11.2,12.9C13.7,13.5 14.2,14.38 14.2,15.31C14.2,16 13.71,17.1 11.5,17.1C9.44,17.1 8.63,16.18 8.5,15H6.32C6.44,17.19 8.08,18.42 10,18.83V21H13V18.85C14.95,18.5 16.5,17.35 16.5,15.3C16.5,12.46 14.07,11.5 11.8,10.9Z', step: null },
-  { label: 'Message Center', icon: 'M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z', step: null },
-  { label: 'Account Profile', icon: 'M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z', step: null },
-  { label: 'User Setting', icon: 'M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.97 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.95C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z', step: null },
+const suggestedItems = [
+  { name: 'Chanderi Silk Kurta', price: 2800, match: 'Matches preference' },
+  { name: 'Kundan Jhumka Set', price: 1400, match: 'On wishlist' },
+  { name: 'Bandhani Dupatta', price: 950, match: 'Pairs with last purchase' },
+  { name: 'Embroidered Potli Bag', price: 1200, match: 'Occasion: Wedding' },
 ]
 
-type Step = 'checkin-qr' | 'checkin-form' | 'checkin-confirmed' | 'retailer-dashboard' | 'whatsapp-select' | 'whatsapp-compose' | 'whatsapp-sent' | 'analytics'
+// ─── NAV ────────────────────────────────────────────────────────────────────
 
-const STEPS: { id: Step; label: string }[] = [
-  { id: 'checkin-qr', label: '1. QR Scan' },
-  { id: 'checkin-form', label: '2. Check-In Form' },
-  { id: 'checkin-confirmed', label: '3. Confirmed' },
-  { id: 'retailer-dashboard', label: '4. Live Dashboard' },
-  { id: 'whatsapp-select', label: '5. Select Customer' },
-  { id: 'whatsapp-compose', label: '6. Compose' },
-  { id: 'whatsapp-sent', label: '7. Message Sent' },
-  { id: 'analytics', label: '8. Analytics' },
+type View = 'checkin-flow' | 'dashboard' | 'customer-detail' | 'rewards' | 'outreach' | 'insights'
+
+const NAV = [
+  { label: 'Check-In Flow', icon: 'M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H9V11M15,11H17V13H15V11M19,11H21V13H19V11M1,21H23L12,10L1,21Z', view: 'checkin-flow' as View },
+  { label: 'Dashboard', icon: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z', view: 'dashboard' as View },
+  { label: 'Rewards', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z', view: 'rewards' as View },
+  { label: 'Outreach', icon: 'M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z', view: 'outreach' as View },
+  { label: 'Insights', icon: 'M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z', view: 'insights' as View },
 ]
 
-// Maps each step to which sidebar item should appear "active"
-const STEP_NAV: Record<Step, string> = {
-  'checkin-qr': 'Download QR Code',
-  'checkin-form': 'Home - Live Customer',
-  'checkin-confirmed': 'Home - Live Customer',
-  'retailer-dashboard': 'Home - Live Customer',
-  'whatsapp-select': 'WhatsApp Campaigns',
-  'whatsapp-compose': 'WhatsApp Campaigns',
-  'whatsapp-sent': 'WhatsApp Campaigns',
-  'analytics': 'Insights',
-}
+const NAV_OTHER = [
+  { label: 'Manage Brand/Stores', icon: 'M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v10z' },
+  { label: 'Download QR Code', icon: 'M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H9V11M15,11H17V13H15V11M19,11H21V13H19V11M1,21H23L12,10L1,21Z' },
+  { label: 'Marketing Campaigns', icon: 'M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V22H19V19H5V22H3V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M14,9H10A5,5 0 0,0 5,14H19A5,5 0 0,0 14,9Z' },
+  { label: 'Payments & Invoices', icon: 'M11.8,10.9C9.53,10.31 8.8,9.7 8.8,8.75C8.8,7.66 9.81,6.9 11.5,6.9C13.28,6.9 13.94,7.75 14,9H16.21C16.14,7.28 15.09,5.7 13,5.19V3H10V5.16C8.06,5.58 6.5,6.84 6.5,8.77C6.5,11.08 8.41,12.23 11.2,12.9C13.7,13.5 14.2,14.38 14.2,15.31C14.2,16 13.71,17.1 11.5,17.1C9.44,17.1 8.63,16.18 8.5,15H6.32C6.44,17.19 8.08,18.42 10,18.83V21H13V18.85C14.95,18.5 16.5,17.35 16.5,15.3C16.5,12.46 14.07,11.5 11.8,10.9Z' },
+  { label: 'Settings', icon: 'M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.97 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.95C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z' },
+]
+
+// ─── COMPONENT ──────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const [currentStep, setCurrentStep] = useState<Step>('checkin-qr')
+  const [activeView, setActiveView] = useState<View>('checkin-flow')
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [selectedCustomer, setSelectedCustomer] = useState(mockCustomers[0])
-  const [selectedTemplate, setSelectedTemplate] = useState(whatsappTemplates[0])
-  const [whatsappModal, setWhatsappModal] = useState<{ customer: typeof mockCustomers[0] } | null>(null)
-  const [modalTemplate, setModalTemplate] = useState(whatsappTemplates[0])
-  const [modalSent, setModalSent] = useState(false)
-
-  const currentIdx = STEPS.findIndex(s => s.id === currentStep)
-  const activeNav = STEP_NAV[currentStep]
-
-  const goNext = () => { if (currentIdx < STEPS.length - 1) setCurrentStep(STEPS[currentIdx + 1].id) }
-  const goPrev = () => { if (currentIdx > 0) setCurrentStep(STEPS[currentIdx - 1].id) }
-
-  const fillTemplate = (t: typeof whatsappTemplates[0], c: typeof mockCustomers[0]) =>
-    t.body
-      .replace('{{name}}', c.name.split(' ')[0])
-      .replace('{{store}}', 'Ensemble · HSR Layout')
-      .replace('{{tier}}', c.tier)
-      .replace('{{preference}}', c.preferences[0])
-      .replace('{{points}}', String(c.points))
-      .replace('{{points_value}}', String(Math.floor(c.points / 10)))
-      .replace('{{expiry}}', '30 Apr 2026')
+  const [selectedCustomer, setSelectedCustomer] = useState<typeof mockCustomers[0] | null>(null)
+  const [customerTab, setCustomerTab] = useState<'profile' | 'journey' | 'assist' | 'billing'>('profile')
+  const [checkinStep, setCheckinStep] = useState<1 | 2 | 3 | 4>(1)
+  const [taggedItems, setTaggedItems] = useState<string[]>([])
+  const [staffNote, setStaffNote] = useState('')
+  const [pointsApplied, setPointsApplied] = useState(false)
+  const [billDone, setBillDone] = useState(false)
+  const [outreachModal, setOutreachModal] = useState<typeof mockCustomers[0] | null>(null)
+  const [outreachTemplate, setOutreachTemplate] = useState(outreachTemplates[0])
+  const [outreachSent, setOutreachSent] = useState(false)
 
   const tierBadge = (tier: string) => {
     if (tier === 'Platinum') return 'bg-blue-800 text-white'
@@ -139,731 +108,1188 @@ export default function Dashboard() {
     return 'bg-blue-100 text-blue-700'
   }
 
-  return (
-    <div className="flex flex-col h-screen bg-white overflow-hidden">
+  const fillTemplate = (t: typeof outreachTemplates[0], c: typeof mockCustomers[0]) =>
+    t.body
+      .replace('{{name}}', c.name.split(' ')[0])
+      .replace('{{tier}}', c.tier)
+      .replace('{{wishlist_item}}', c.wishlist[0])
+      .replace('{{points}}', String(c.points))
+      .replace('{{points_value}}', String(Math.floor(c.points / 10)))
+      .replace('{{expiry}}', '30 Apr 2026')
 
-      {/* ── HEADER ── */}
-      <header className="bg-blue-600 text-white px-4 py-2 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-4">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-white hover:text-blue-200 focus:outline-none p-1">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <h2 className="text-lg font-bold italic text-yellow-400">modenX</h2>
+  const openCustomer = (c: typeof mockCustomers[0], tab: typeof customerTab = 'profile') => {
+    setSelectedCustomer(c)
+    setCustomerTab(tab)
+    setTaggedItems([])
+    setStaffNote('')
+    setPointsApplied(false)
+    setBillDone(false)
+    setActiveView('customer-detail')
+  }
+
+  const openOutreach = (c: typeof mockCustomers[0], tmpl = outreachTemplates[0]) => {
+    setOutreachTemplate(tmpl)
+    setOutreachSent(false)
+    setOutreachModal(c)
+  }
+
+  // ── CHECK-IN FLOW ──────────────────────────────────────────────────────────
+
+  const renderCheckinFlow = () => {
+    const steps = [
+      { n: 1 as const, label: 'Store QR Code' },
+      { n: 2 as const, label: 'Customer Scans & Fills Form' },
+      { n: 3 as const, label: 'Check-In Confirmed' },
+      { n: 4 as const, label: 'Retailer Sees Live Customer' },
+    ]
+    return (
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Customer Check-In Flow</h1>
+        <p className="text-gray-500 text-sm mb-5">The complete journey from store entrance to live dashboard — no app required.</p>
+
+        {/* Step indicator */}
+        <div className="flex items-center space-x-2 mb-6">
+          {steps.map((s, i) => (
+            <div key={s.n} className="flex items-center">
+              <button onClick={() => setCheckinStep(s.n)}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${checkinStep === s.n ? 'bg-blue-600 text-white' : checkinStep > s.n ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${checkinStep === s.n ? 'bg-white text-blue-600' : checkinStep > s.n ? 'bg-blue-600 text-white' : 'bg-gray-300 text-white'}`}>{checkinStep > s.n ? '✓' : s.n}</span>
+                <span>{s.label}</span>
+              </button>
+              {i < steps.length - 1 && <div className={`w-8 h-0.5 mx-1 ${checkinStep > s.n ? 'bg-blue-400' : 'bg-gray-200'}`} />}
+            </div>
+          ))}
         </div>
 
-        {/* Store dropdown */}
+        {/* ── Step 1: QR Code ── */}
+        {checkinStep === 1 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">Store QR Code</h2>
+              <p className="text-gray-500 text-sm mb-5">Each MODENX partner store gets a unique QR code displayed at the entrance. Customers scan with their phone camera — no app download required.</p>
+              <div className="space-y-3">
+                {[
+                  { icon: '🔐', title: 'Unique per Store', desc: 'Every retailer gets a QR linked to their MODENX account and store location' },
+                  { icon: '📲', title: 'No App Needed', desc: 'Opens instantly in the customer&apos;s mobile browser — zero friction' },
+                  { icon: '⚡', title: 'Instant Dashboard Ping', desc: 'The retailer gets a real-time notification the moment anyone scans' },
+                  { icon: '📡', title: 'Multi-Channel Capture', desc: 'Phone, email, Instagram, and preferences — all in one 30-second form' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start space-x-3 border border-gray-200 rounded-lg p-3">
+                    <span className="text-xl flex-shrink-0">{item.icon}</span>
+                    <div><p className="font-semibold text-gray-900 text-sm">{item.title}</p><p className="text-gray-500 text-xs mt-0.5">{item.desc}</p></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="border border-gray-200 rounded-2xl p-6 w-72 text-center shadow-sm">
+                <div className="bg-blue-600 rounded-xl p-4 mb-4">
+                  <p className="text-yellow-400 font-bold italic text-lg">modenX</p>
+                  <p className="text-blue-200 text-xs mt-0.5">Ensemble · HSR Layout, Bengaluru</p>
+                </div>
+                <div className="border-2 border-gray-200 rounded-xl p-3 mb-4 mx-auto w-44 h-44 flex items-center justify-center relative bg-white">
+                  <div className="grid grid-cols-7 gap-0.5 w-36 h-36">
+                    {Array.from({ length: 49 }).map((_, i) => {
+                      const corner = [0,1,7,8,5,6,13,14,35,36,43,44,40,41,47,48].includes(i)
+                      const rand = [2,10,18,22,25,30,33,38,46,3,19,27,31].includes(i)
+                      return <div key={i} className={`w-full h-full ${corner ? 'bg-blue-700' : rand ? 'bg-blue-900' : 'bg-white'}`} />
+                    })}
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-white p-1 rounded shadow"><div className="bg-blue-600 w-8 h-8 rounded flex items-center justify-center"><span className="text-white font-black text-xs">MX</span></div></div>
+                  </div>
+                </div>
+                <button className="w-full border-2 border-blue-600 text-blue-600 font-semibold py-2 rounded-lg text-sm hover:bg-blue-50 mb-2">Download QR Code</button>
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-blue-600 font-medium">Store Open · 47 scans today</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 2: Customer Form ── */}
+        {checkinStep === 2 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">Customer Fills Check-In Form</h2>
+              <p className="text-gray-500 text-sm mb-5">After scanning, a lightweight web form opens. This is where we capture all the data needed to reach the customer on every channel.</p>
+              <div className="border border-blue-100 bg-blue-50 rounded-lg p-4 mb-4">
+                <p className="text-blue-800 font-semibold text-sm">How We Capture Each Channel</p>
+                <div className="mt-2 space-y-2">
+                  {[
+                    { ch: '💬 WhatsApp + 📱 SMS + 💎 RCS', how: 'Phone number (required field) — auto-enables all 3' },
+                    { ch: '📧 Email', how: 'Optional field on check-in form — 78% of customers provide it' },
+                    { ch: '📸 Instagram', how: 'Optional field + "Follow us" CTA — or staff adds it later from the profile' },
+                  ].map((c, i) => (
+                    <div key={i} className="flex items-start space-x-2 text-xs">
+                      <span className="font-semibold text-blue-700 flex-shrink-0">{c.ch}</span>
+                      <span className="text-blue-600">→ {c.how}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                {[
+                  'Customer scans QR → browser opens form instantly',
+                  'Returning customer auto pre-filled via phone lookup',
+                  'New customer fills details in ~30 seconds',
+                  'WhatsApp + email opt-in captured with consent',
+                  'Instagram handle is optional but incentivised (bonus points)',
+                ].map((step, i) => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</div>
+                    <p className="text-sm text-gray-700">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Phone mockup */}
+            <div className="flex justify-center">
+              <div className="w-72 bg-gray-900 rounded-3xl p-3 shadow-2xl">
+                <div className="bg-white rounded-2xl overflow-hidden">
+                  <div className="bg-gray-800 px-4 py-1.5 flex justify-between"><span className="text-white text-xs">9:41 AM</span><span className="text-white text-xs">●●●</span></div>
+                  <div className="bg-gray-100 px-3 py-1.5"><div className="bg-white rounded text-xs text-gray-500 px-2 py-0.5">checkin.modenx.in/ensemble</div></div>
+                  <div className="p-4">
+                    <div className="text-center mb-3">
+                      <p className="text-blue-600 font-bold italic text-base">modenX</p>
+                      <p className="text-gray-500 text-xs">Ensemble · HSR Layout</p>
+                    </div>
+                    <div className="space-y-2.5">
+                      <div><p className="text-xs text-gray-500 font-medium">Full Name *</p><div className="border border-gray-300 rounded px-2 py-1.5 text-xs bg-gray-50 mt-0.5">Meera Kapoor</div></div>
+                      <div><p className="text-xs text-gray-500 font-medium">WhatsApp Number *</p><div className="border border-gray-300 rounded px-2 py-1.5 text-xs bg-gray-50 mt-0.5">+91 98765 43210</div></div>
+                      <div><p className="text-xs text-gray-500 font-medium">Email</p><div className="border border-gray-300 rounded px-2 py-1.5 text-xs bg-gray-50 mt-0.5">meera.kapoor@gmail.com</div></div>
+                      <div><p className="text-xs text-gray-500 font-medium">Instagram Handle</p><div className="border border-gray-300 rounded px-2 py-1.5 text-xs bg-gray-50 mt-0.5">@meera.stylefiles</div></div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">I like</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {['Ethnic Wear', 'Western', 'Formals', 'Bags', 'Jewellery'].map(p => (
+                            <span key={p} className={`text-xs px-2 py-0.5 rounded-full border ${['Ethnic Wear'].includes(p) ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-500'}`}>{p}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-2 bg-blue-50 rounded p-2">
+                        <div className="w-3 h-3 bg-blue-600 rounded-sm flex items-center justify-center mt-0.5 flex-shrink-0">
+                          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                        </div>
+                        <p className="text-xs text-blue-700">I agree to receive offers via WhatsApp, Email &amp; SMS</p>
+                      </div>
+                      <button className="w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded-lg">Check In ✓</button>
+                      <p className="text-center text-xs text-gray-400">🎁 Share Instagram &amp; get 50 bonus pts!</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 3: Confirmation ── */}
+        {checkinStep === 3 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">Check-In Confirmed</h2>
+              <p className="text-gray-500 text-sm mb-5">The customer sees a personalised welcome screen. Simultaneously, the retailer gets an instant ping on their dashboard.</p>
+
+              <div className="border border-gray-200 rounded-xl p-5 mb-4">
+                <p className="text-sm font-semibold text-gray-700 mb-3">Retailer sees this notification instantly:</p>
+                <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">MK</div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900 text-sm">Meera Kapoor checked in</p>
+                    <p className="text-gray-500 text-xs">Gold · 7 visits · Loves Ethnic Wear · Wedding in May</p>
+                  </div>
+                  <span className="text-xs text-blue-600 font-medium">Just now</span>
+                </div>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">Channels captured at check-in:</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {[
+                    { icon: '💬', label: 'WhatsApp', on: true },
+                    { icon: '📱', label: 'SMS', on: true },
+                    { icon: '📧', label: 'Email', on: true },
+                    { icon: '📸', label: 'Instagram', on: true },
+                    { icon: '💎', label: 'RCS', on: true },
+                  ].map(ch => (
+                    <div key={ch.label} className={`rounded-lg p-2 text-center ${ch.on ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-dashed border-gray-200'}`}>
+                      <p className="text-lg">{ch.icon}</p>
+                      <p className="text-xs font-medium text-gray-700">{ch.label}</p>
+                      <p className="text-xs text-blue-600 mt-0.5">✓</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-2 text-center">All 5 outreach channels unlocked from a single 30-second form</p>
+              </div>
+            </div>
+
+            {/* Customer phone confirmation */}
+            <div className="flex justify-center">
+              <div className="w-72 bg-gray-900 rounded-3xl p-3 shadow-2xl">
+                <div className="bg-white rounded-2xl overflow-hidden">
+                  <div className="bg-gray-800 px-4 py-1.5 flex justify-between"><span className="text-white text-xs">9:41 AM</span><span className="text-white text-xs">●●●</span></div>
+                  <div className="p-6 text-center">
+                    <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                    </div>
+                    <p className="text-blue-600 font-bold italic mb-1">modenX</p>
+                    <p className="text-xl font-bold text-gray-900">Welcome back,</p>
+                    <p className="text-xl font-bold text-blue-600 mb-3">Meera! 🎉</p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                      <p className="text-blue-800 font-semibold text-sm">🏆 Gold Member</p>
+                      <p className="text-blue-600 text-xs mt-0.5">2,450 points · ₹245 off today</p>
+                    </div>
+                    <div className="text-left space-y-1.5 text-xs text-gray-600">
+                      <div className="flex justify-between"><span>Total Visits</span><span className="font-semibold text-gray-900">7 times</span></div>
+                      <div className="flex justify-between"><span>Connected Channels</span><span className="font-semibold text-gray-900">💬 📱 📧 📸 💎</span></div>
+                      <div className="flex justify-between"><span>Bonus Points Earned</span><span className="font-semibold text-blue-600">+50 pts (Instagram)</span></div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-3">Enjoy your shopping!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 4: Live on Dashboard ── */}
+        {checkinStep === 4 && (
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">Customer Appears on Live Dashboard</h2>
+            <p className="text-gray-500 text-sm mb-5">The retailer now sees the customer on their dashboard with full context — ready to assist, bill, or reach out later on any channel.</p>
+
+            <div className="border border-gray-200 rounded-xl overflow-hidden mb-5">
+              <div className="bg-blue-600 px-5 py-3 flex items-center justify-between">
+                <div className="flex items-center space-x-2"><div className="w-2 h-2 bg-blue-300 rounded-full animate-pulse" /><span className="text-white text-sm font-semibold">Live Customers — Ensemble Store</span></div>
+                <span className="text-blue-200 text-xs">3 in store now</span>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {mockCustomers.map((c, i) => (
+                  <div key={c.id} className={`flex items-center space-x-4 px-5 py-3 ${i === 0 ? 'bg-blue-50 border-l-4 border-blue-600' : ''}`}>
+                    <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">{c.avatar}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2">
+                        <p className="font-semibold text-gray-900 text-sm">{c.name}</p>
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${tierBadge(c.tier)}`}>{c.tier}</span>
+                        {i === 0 && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Just checked in</span>}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">{c.visits} visits · {c.preferences.join(', ')} · {c.occasions[0]}</p>
+                      <div className="flex items-center space-x-1.5 mt-1">
+                        {[
+                          { icon: '💬', on: c.channels.whatsapp },
+                          { icon: '📱', on: c.channels.sms },
+                          { icon: '📧', on: c.channels.email },
+                          { icon: '📸', on: c.channels.instagram },
+                        ].map((ch, j) => (
+                          <span key={j} className={`text-xs ${ch.on ? 'opacity-100' : 'opacity-25'}`}>{ch.icon}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex space-x-2 flex-shrink-0">
+                      <button onClick={() => openCustomer(c)} className="text-xs border border-blue-600 text-blue-600 px-2.5 py-1 rounded-lg hover:bg-blue-50">Profile</button>
+                      <button onClick={() => openCustomer(c, 'assist')} className="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-lg hover:bg-blue-700">Assist</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 text-center">
+              <p className="text-sm text-gray-700 mb-3">From here, the retailer can take any action on the customer:</p>
+              <div className="flex items-center justify-center space-x-3 flex-wrap gap-y-2">
+                <button onClick={() => openCustomer(mockCustomers[0])} className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">👤 View Full Profile</button>
+                <button onClick={() => openCustomer(mockCustomers[0], 'assist')} className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">🛍️ Start In-Store Assist</button>
+                <button onClick={() => openCustomer(mockCustomers[0], 'billing')} className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">🧾 Bill Customer</button>
+                <button onClick={() => openOutreach(mockCustomers[0])} className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">📡 Reach Out (5 channels)</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Nav buttons */}
+        <div className="flex items-center justify-between mt-8 pt-5 border-t border-gray-200">
+          <button onClick={() => checkinStep > 1 && setCheckinStep((checkinStep - 1) as any)} disabled={checkinStep === 1}
+            className="flex items-center space-x-2 px-4 py-2 rounded-lg border-2 border-blue-600 text-blue-600 text-sm font-medium hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <span>Previous</span>
+          </button>
+          <span className="text-sm text-gray-400">Step {checkinStep} of 4</span>
+          {checkinStep < 4 ? (
+            <button onClick={() => setCheckinStep((checkinStep + 1) as any)}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+              <span>Next</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          ) : (
+            <button onClick={() => setActiveView('dashboard')}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+              <span>Go to Dashboard</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── DASHBOARD ─────────────────────────────────────────────────────────────
+
+  const renderDashboard = () => (
+    <div>
+      {/* ── Unified stats: check-in + rewards + outreach + revenue ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        {[
+          { label: 'In Store Now', value: '3', sub: '47 check-ins today', link: 'checkin-flow' as View },
+          { label: 'Revenue Today', value: '₹38,420', sub: '18 purchases · 68% CVR', link: null },
+          { label: 'Points Issued Today', value: '1,920', sub: '5% reward rate active', link: 'rewards' as View },
+          { label: 'Outreach Sent (7d)', value: '142', sub: '💬87 📧31 📸14 📱10', link: 'outreach' as View },
+        ].map((s, i) => (
+          <div key={i} onClick={() => s.link && setActiveView(s.link)} className={`bg-white border border-gray-200 rounded-xl p-4 ${s.link ? 'cursor-pointer hover:border-blue-300 hover:bg-blue-50' : ''} transition-all`}>
+            <p className="text-xs text-gray-500 font-medium">{s.label}</p>
+            <p className="text-2xl font-black text-gray-900 mt-1">{s.value}</p>
+            <p className="text-xs text-gray-400 mt-1">{s.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* ── Live customers (2 cols) ── */}
+        <div className="lg:col-span-2 space-y-5">
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <p className="font-semibold text-gray-900 text-sm">Live Customers</p>
+              </div>
+              <div className="flex space-x-2">
+                {['Now', '12h', '24h', '1w'].map((f, i) => (
+                  <button key={f} className={`text-xs px-2.5 py-1 rounded-lg ${i === 0 ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{f}</button>
+                ))}
+              </div>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {mockCustomers.map((c) => (
+                <div key={c.id} className="flex items-center space-x-3 px-5 py-3 hover:bg-blue-50 cursor-pointer transition-all" onClick={() => openCustomer(c)}>
+                  <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">{c.avatar}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 flex-wrap">
+                      <p className="font-semibold text-gray-900 text-sm">{c.name}</p>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${tierBadge(c.tier)}`}>{c.tier}</span>
+                      <span className="text-xs text-gray-400">{c.points.toLocaleString()} pts</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5 truncate">{c.preferences.join(', ')} · {c.occasions[0]}</p>
+                    <div className="flex items-center space-x-1 mt-0.5">
+                      {[{ i: '💬', o: c.channels.whatsapp }, { i: '📱', o: c.channels.sms }, { i: '📧', o: c.channels.email }, { i: '📸', o: c.channels.instagram }].map((ch, j) => (
+                        <span key={j} className={`text-xs ${ch.o ? '' : 'opacity-20'}`}>{ch.i}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1.5 flex-shrink-0">
+                    <button onClick={(e) => { e.stopPropagation(); openOutreach(c) }} className="text-xs border border-blue-600 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50">Reach Out</button>
+                    <button onClick={(e) => { e.stopPropagation(); openCustomer(c, 'assist') }} className="text-xs bg-blue-600 text-white px-2 py-1 rounded-lg hover:bg-blue-700">Assist</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Rewards + Outreach side-by-side ── */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Rewards health */}
+            <div className="border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-blue-300 transition-all" onClick={() => setActiveView('rewards')}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="font-semibold text-gray-900 text-sm">🏆 Rewards Program</p>
+                <span className="text-xs text-blue-600 hover:underline">Edit →</span>
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between"><span className="text-gray-500">Earn Rate</span><span className="font-semibold">5% (1 pt per ₹20)</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Active Offers</span><span className="font-semibold">5 running</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Points Redeemed (30d)</span><span className="font-semibold text-blue-600">12,400 pts</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Tier Split</span>
+                  <span className="font-semibold">
+                    <span className="text-blue-800">12</span> Plat · <span className="text-blue-600">48</span> Gold · <span className="text-blue-400">154</span> Silver
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Outreach health */}
+            <div className="border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-blue-300 transition-all" onClick={() => setActiveView('outreach')}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="font-semibold text-gray-900 text-sm">📡 Outreach (7 days)</p>
+                <span className="text-xs text-blue-600 hover:underline">View →</span>
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between"><span className="text-gray-500">💬 WhatsApp</span><span className="font-semibold">87 sent · 41% CVR</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">📧 Email</span><span className="font-semibold">31 sent · 18% CVR</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">📸 Instagram</span><span className="font-semibold">14 sent · 32% CVR</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">📱 SMS</span><span className="font-semibold">10 sent · 28% CVR</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right sidebar ── */}
+        <div className="space-y-4">
+          {/* Journey funnel */}
+          <div className="border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-blue-300 transition-all" onClick={() => setActiveView('insights')}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="font-semibold text-gray-900 text-sm">📊 Weekly Journey</p>
+              <span className="text-xs text-blue-600">Details →</span>
+            </div>
+            {[
+              { step: 'Walk-In → Check-In', count: 214, pct: 100 },
+              { step: 'Profile Captured', count: 198, pct: 92 },
+              { step: 'Staff Assisted', count: 143, pct: 67 },
+              { step: 'Purchased', count: 97, pct: 45 },
+              { step: 'Returned Again', count: 61, pct: 28 },
+            ].map((s, i) => (
+              <div key={i} className="mb-2 last:mb-0">
+                <div className="flex justify-between text-xs mb-0.5">
+                  <span className="text-gray-700">{s.step}</span>
+                  <span className="font-semibold text-blue-600">{s.count}</span>
+                </div>
+                <div className="w-full bg-blue-50 rounded-full h-1.5">
+                  <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${s.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Unified activity feed — all features */}
+          <div className="border border-gray-200 rounded-xl p-4">
+            <p className="font-semibold text-gray-900 text-sm mb-3">Live Activity Feed</p>
+            <div className="space-y-2.5">
+              {[
+                { icon: '📋', text: 'Meera Kapoor scanned QR and checked in', time: '2 min ago', tag: 'Check-In' },
+                { icon: '🛍️', text: 'Staff tagged 3 items for Meera (assist)', time: '5 min ago', tag: 'Assist' },
+                { icon: '🧾', text: 'Vikram Sinha purchased ₹3,800 (card)', time: '18 min ago', tag: 'Billing' },
+                { icon: '🏆', text: 'Vikram earned +190 reward points', time: '18 min ago', tag: 'Rewards' },
+                { icon: '💬', text: 'Thank You sent to Vikram via WhatsApp', time: '19 min ago', tag: 'Outreach' },
+                { icon: '📸', text: 'Zara replied to Instagram DM offer', time: '1 hr ago', tag: 'Outreach' },
+                { icon: '⬆️', text: 'Neha K. upgraded to Gold tier', time: '3 hrs ago', tag: 'Rewards' },
+                { icon: '📧', text: 'Monthly lookbook sent to 534 customers', time: '5 hrs ago', tag: 'Outreach' },
+              ].map((a, i) => (
+                <div key={i} className="flex items-start space-x-2">
+                  <span className="text-sm flex-shrink-0">{a.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-700 leading-relaxed">{a.text}</p>
+                    <div className="flex items-center space-x-2 mt-0.5">
+                      <span className="text-xs text-gray-400">{a.time}</span>
+                      <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">{a.tag}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── CUSTOMER DETAIL (unified single-customer workspace) ───────────────────
+
+  const renderCustomerDetail = () => {
+    if (!selectedCustomer) return null
+    const c = selectedCustomer
+    const tabs = [
+      { id: 'profile' as const, label: 'Profile' },
+      { id: 'journey' as const, label: 'Journey' },
+      { id: 'assist' as const, label: 'In-Store Assist' },
+      { id: 'billing' as const, label: 'Billing' },
+    ]
+
+    return (
+      <div>
+        {/* ── Customer header bar (persists across tabs) ── */}
+        <div className="flex items-center space-x-4 bg-blue-600 text-white rounded-xl p-4 mb-5">
+          <button onClick={() => setActiveView('dashboard')} className="text-blue-200 hover:text-white mr-1">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <div className="w-12 h-12 bg-white text-blue-700 rounded-full flex items-center justify-center font-black text-lg">{c.avatar}</div>
+          <div className="flex-1">
+            <div className="flex items-center space-x-2">
+              <p className="font-bold text-lg">{c.name}</p>
+              <span className="text-xs bg-white text-blue-700 font-bold px-2 py-0.5 rounded-full">🏆 {c.tier}</span>
+            </div>
+            <p className="text-blue-200 text-xs">{c.phone} · {c.visits} visits · {c.totalSpend} lifetime</p>
+          </div>
+          <div className="text-right space-y-1">
+            <p className="text-2xl font-black">{c.points.toLocaleString()} <span className="text-xs font-normal text-blue-200">pts</span></p>
+            <button onClick={() => openOutreach(c)} className="text-xs bg-white text-blue-700 font-semibold px-3 py-1 rounded-lg hover:bg-blue-50">Reach Out</button>
+          </div>
+        </div>
+
+        {/* ── Tabs ── */}
+        <div className="flex space-x-1 border-b border-gray-200 mb-5">
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setCustomerTab(t.id)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${customerTab === t.id ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── TAB: Profile ── */}
+        {customerTab === 'profile' && (
+          <div>
+            {/* Connected Channels strip */}
+            <div className="border border-gray-200 rounded-xl p-4 mb-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="font-semibold text-gray-900 text-sm">📡 Connected Channels</p>
+                <span className="text-xs text-gray-400">Captured via QR check-in form + staff enrichment</span>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                {[
+                  { icon: '💬', label: 'WhatsApp', value: c.phone, source: 'QR check-in', connected: c.channels.whatsapp },
+                  { icon: '📱', label: 'SMS', value: c.phone, source: 'QR check-in', connected: c.channels.sms },
+                  { icon: '📧', label: 'Email', value: c.email || '—', source: 'Check-in form', connected: c.channels.email },
+                  { icon: '📸', label: 'Instagram', value: c.instagram || '—', source: 'Customer shared / staff added', connected: c.channels.instagram },
+                  { icon: '💎', label: 'RCS', value: c.phone, source: 'Auto (phone)', connected: c.channels.whatsapp },
+                ].map((ch) => (
+                  <div key={ch.label} className={`rounded-lg p-2.5 text-center border ${ch.connected ? 'border-blue-200 bg-blue-50' : 'border-dashed border-gray-200 bg-gray-50'}`}>
+                    <p className="text-lg mb-0.5">{ch.icon}</p>
+                    <p className="text-xs font-semibold text-gray-900">{ch.label}</p>
+                    {ch.connected ? (
+                      <>
+                        <p className="text-xs text-blue-600 font-medium mt-1 truncate">{ch.value}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{ch.source}</p>
+                      </>
+                    ) : (
+                      <p className="text-xs text-gray-400 mt-1 italic">Not connected</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-2">🛍️ Preferences</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {c.preferences.map(p => <span key={p} className="bg-blue-50 border border-blue-200 text-blue-700 text-xs px-2.5 py-1 rounded-full">{p}</span>)}
+                  </div>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-2">❤️ Wishlist</p>
+                  {c.wishlist.map(w => (
+                    <div key={w} className="flex items-center space-x-2 text-xs text-gray-700 mb-1 last:mb-0">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full flex-shrink-0" /><span>{w}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-2">📅 Occasions</p>
+                  {c.occasions.map(o => <div key={o} className="text-xs text-gray-700 bg-blue-50 rounded px-2 py-1 mb-1 last:mb-0">{o}</div>)}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-2">🧾 Purchase History</p>
+                  <div className="space-y-2">
+                    {c.purchases.map((p, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
+                        <div><p className="font-medium text-gray-900">{p.item}</p><p className="text-gray-400">{p.date}</p></div>
+                        <p className="font-semibold text-gray-900">₹{p.amount.toLocaleString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-2">📝 Staff Notes</p>
+                  <p className="text-xs text-gray-600 bg-yellow-50 border border-yellow-100 rounded px-3 py-2 italic">&ldquo;{c.notes}&rdquo;</p>
+                </div>
+                <div className="border border-blue-100 bg-blue-50 rounded-xl p-4 text-center">
+                  <p className="text-xs text-gray-500 mb-0.5">Lifetime Value</p>
+                  <p className="text-3xl font-black text-blue-600">{c.totalSpend}</p>
+                  <p className="text-xs text-gray-500 mt-1">{c.visits} visits · {c.tier} Member</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => setCustomerTab('assist')} className="bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-blue-700">Start Assist</button>
+                  <button onClick={() => setCustomerTab('billing')} className="border-2 border-blue-600 text-blue-600 text-sm font-semibold py-2.5 rounded-xl hover:bg-blue-50">Bill Customer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB: Journey ── */}
+        {customerTab === 'journey' && (
+          <div className="max-w-2xl">
+            <p className="text-gray-500 text-sm mb-5">Complete timeline of {c.name.split(' ')[0]}&apos;s journey — check-ins, purchases, rewards, and outreach.</p>
+            <div className="relative pl-6 border-l-2 border-blue-200 space-y-5">
+              {[
+                { date: 'Today · ' + c.checkInTime, event: '📋 Checked into store', detail: 'Scanned QR at entrance · All 5 channels connected', tag: 'Check-In' },
+                { date: 'Today · ' + c.checkInTime, event: '💬 Welcome Back offer sent via WhatsApp', detail: '15% OFF message delivered and read', tag: 'Outreach' },
+                ...c.purchases.flatMap(p => [
+                  { date: p.date, event: `🧾 Purchased: ${p.item}`, detail: `₹${p.amount.toLocaleString()} · Paid via UPI`, tag: 'Billing' },
+                  { date: p.date, event: `🏆 Earned +${Math.floor(p.amount * 0.05)} reward points`, detail: `5% of ₹${p.amount.toLocaleString()} (from Rewards Catalog)`, tag: 'Rewards' },
+                  { date: p.date, event: '💬 Post-visit Thank You sent', detail: 'Via WhatsApp · Earned 50 bonus points from review', tag: 'Outreach' },
+                ]),
+                { date: '2024', event: '👤 Joined MODENX', detail: `Signed up as ${c.tier} member via store QR`, tag: 'Check-In' },
+              ].map((ev, i) => (
+                <div key={i} className="relative">
+                  <div className="absolute -left-8 w-3 h-3 rounded-full bg-blue-500 border-2 border-white" />
+                  <div className="flex items-center space-x-2 mb-0.5">
+                    <p className="text-xs text-gray-400">{ev.date}</p>
+                    <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">{ev.tag}</span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">{ev.event}</p>
+                  <p className="text-xs text-gray-500">{ev.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB: Assist ── */}
+        {customerTab === 'assist' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="lg:col-span-2">
+              <p className="font-semibold text-gray-900 mb-3">✨ Suggested for {c.name.split(' ')[0]}</p>
+              <div className="space-y-2.5">
+                {suggestedItems.map((item) => {
+                  const isTagged = taggedItems.includes(item.name)
+                  return (
+                    <div key={item.name} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all ${isTagged ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-200'}`}>
+                      <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                      </div>
+                      <div className="flex-1"><p className="font-medium text-gray-900 text-sm">{item.name}</p><p className="text-xs text-blue-600">{item.match}</p></div>
+                      <p className="font-semibold text-gray-900 text-sm">₹{item.price.toLocaleString()}</p>
+                      <button onClick={() => setTaggedItems(isTagged ? taggedItems.filter(x => x !== item.name) : [...taggedItems, item.name])}
+                        className={`text-xs px-3 py-1.5 rounded-lg font-medium ${isTagged ? 'bg-blue-600 text-white' : 'border border-blue-600 text-blue-600 hover:bg-blue-50'}`}>
+                        {isTagged ? '✓ Tagged' : 'Tag'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-2">Tagged Items ({taggedItems.length})</p>
+                {taggedItems.length === 0
+                  ? <p className="text-xs text-gray-400 italic">Tag items from suggestions</p>
+                  : taggedItems.map(i => <div key={i} className="text-xs text-blue-700 bg-blue-50 px-2 py-1.5 rounded mb-1">✓ {i}</div>)
+                }
+              </div>
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-2">Staff Note</p>
+                <textarea className="w-full text-xs border border-gray-200 rounded-lg p-2 resize-none focus:outline-none focus:border-blue-400" rows={3}
+                  placeholder="e.g. Interested in wedding collection" value={staffNote} onChange={e => setStaffNote(e.target.value)} />
+              </div>
+              <button onClick={() => { setPointsApplied(false); setBillDone(false); setCustomerTab('billing') }}
+                className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700">Proceed to Billing →</button>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB: Billing ── */}
+        {customerTab === 'billing' && (() => {
+          const items = taggedItems.length > 0
+            ? taggedItems.map((name, i) => ({ name, price: [2800, 1400, 950, 1200][i] || 1500 }))
+            : [{ name: 'Chanderi Silk Kurta', price: 2800 }, { name: 'Kundan Jhumka Set', price: 1400 }]
+          const sub = items.reduce((s, i) => s + i.price, 0)
+          const disc = pointsApplied ? Math.floor(c.points / 10) : 0
+          const total = sub - disc
+          const earned = Math.floor(total * 0.05)
+
+          return !billDone ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="bg-gray-50 px-5 py-3 border-b border-gray-100"><p className="font-semibold text-gray-900 text-sm">Items</p></div>
+                <div className="divide-y divide-gray-50">
+                  {items.map((it, i) => (
+                    <div key={i} className="flex justify-between px-5 py-3 text-sm"><span className="text-gray-800">{it.name}</span><span className="font-semibold">₹{it.price.toLocaleString()}</span></div>
+                  ))}
+                </div>
+                <div className="px-5 py-3 border-t border-gray-100 space-y-1">
+                  <div className="flex justify-between text-sm"><span className="text-gray-500">Subtotal</span><span>₹{sub.toLocaleString()}</span></div>
+                  {pointsApplied && <div className="flex justify-between text-sm text-blue-600"><span>Points ({c.points} pts)</span><span>-₹{disc}</span></div>}
+                  <div className="flex justify-between font-bold"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className={`border-2 rounded-xl p-4 cursor-pointer ${pointsApplied ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`} onClick={() => setPointsApplied(!pointsApplied)}>
+                  <div className="flex items-center justify-between">
+                    <div><p className="font-semibold text-gray-900 text-sm">Apply Reward Points</p><p className="text-xs text-gray-500">{c.points.toLocaleString()} pts = ₹{Math.floor(c.points / 10)} off</p></div>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${pointsApplied ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>{pointsApplied && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}</div>
+                  </div>
+                </div>
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                  <p className="text-sm font-semibold text-gray-900">Points Earned This Visit</p>
+                  <p className="text-2xl font-black text-blue-600 mt-0.5">+{earned} pts</p>
+                  <p className="text-xs text-gray-500 mt-1">Based on 5% reward rate (from <button onClick={() => setActiveView('rewards')} className="text-blue-600 underline">Rewards Catalog</button>)</p>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {['UPI', 'Card', 'Cash'].map((m, i) => (
+                    <div key={m} className={`text-center py-2.5 rounded-lg border-2 text-sm font-medium cursor-pointer ${i === 0 ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-blue-200'}`}>{m}</div>
+                  ))}
+                </div>
+                <button onClick={() => setBillDone(true)} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-base hover:bg-blue-700">
+                  Complete — ₹{total.toLocaleString()}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-md mx-auto text-center py-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-1">Purchase Complete!</h3>
+              <p className="text-gray-500 text-sm mb-4">₹{total.toLocaleString()} · +{earned} pts earned</p>
+              <button onClick={() => openOutreach(c, outreachTemplates[6])} className="border-2 border-blue-600 text-blue-600 px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-50">
+                Send Thank You →
+              </button>
+            </div>
+          )
+        })()}
+      </div>
+    )
+  }
+
+  // ── REWARDS CATALOG ────────────────────────────────────────────────────────
+
+  const renderRewards = () => (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">Rewards Catalog</h1>
+
+      {/* Default Reward Points */}
+      <div className="border border-gray-200 rounded-xl p-6 mb-8">
+        <div className="flex items-center space-x-3 mb-5">
+          <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
+            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          </div>
+          <p className="text-gray-900 font-medium">Do you offer reward points?</p>
+        </div>
+
+        <div className="flex items-center space-x-2 mb-4">
+          <p className="text-gray-700 text-sm">Enter default reward details:</p>
+          <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer">
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+          </div>
+        </div>
+
+        {/* Radio options */}
+        <div className="flex items-center space-x-6 mb-5">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center">
+              <div className="w-0 h-0"></div>
+            </div>
+            <span className="text-sm text-gray-700">Per Point Cost</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <div className="w-4 h-4 rounded-full border-2 border-blue-600 flex items-center justify-center">
+              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+            </div>
+            <span className="text-sm text-gray-700">Percentage</span>
+          </label>
+        </div>
+
+        {/* Form fields */}
+        <div className="flex items-end space-x-4 mb-3">
+          <div className="flex-1">
+            <label className="text-xs text-gray-600 font-medium">Percentage</label>
+            <input type="text" defaultValue="5" className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+          </div>
+          <div className="flex-1">
+            <label className="text-xs text-gray-600 font-medium">Min Spend Limit</label>
+            <input type="text" defaultValue="500" className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+          </div>
+          <div className="flex-1">
+            <label className="text-xs text-gray-600 font-medium">Max Spend Limit</label>
+            <input type="text" defaultValue="50000" className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+          </div>
+          <div className="flex-1">
+            <label className="text-xs text-gray-600 font-medium">Point Expiry in (months)</label>
+            <input type="text" defaultValue="12" placeholder="0 for no expiry time" className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+          </div>
+          <button className="text-gray-400 hover:text-gray-600 p-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <p className="text-xs text-blue-600 mb-4">1 reward point for every ₹20 spent.</p>
+        <div className="flex justify-end">
+          <button className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Update</button>
+        </div>
+      </div>
+
+      {/* Other Special Offers */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-900">Other Special Offers</h2>
+        <button className="flex items-center space-x-2 text-blue-600 hover:text-blue-700">
+          <div className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+          </div>
+          <span className="font-medium text-sm">Add</span>
+        </button>
+      </div>
+
+      <div className="border border-gray-200 rounded-xl overflow-hidden">
+        {/* Table header */}
+        <div className="grid grid-cols-8 bg-blue-600 text-white text-xs font-medium">
+          <div className="px-4 py-3">Offer Name</div>
+          <div className="px-4 py-3">Offer Type</div>
+          <div className="px-4 py-3">Reward Validity</div>
+          <div className="px-4 py-3">Offer Value</div>
+          <div className="px-4 py-3">Min Spend Amount</div>
+          <div className="px-4 py-3">Start Date</div>
+          <div className="px-4 py-3">End Date</div>
+          <div className="px-4 py-3">Delete</div>
+        </div>
+        {/* Offers */}
+        {[
+          { name: 'Welcome Bonus', type: 'Flat Points', validity: '30 days', value: '100 pts', min: '₹0', start: '01 Apr 2026', end: '30 Jun 2026' },
+          { name: 'Birthday Special', type: 'Discount %', validity: '7 days', value: '20% OFF', min: '₹1,000', start: 'On Birthday', end: '+7 days' },
+          { name: 'Referral Reward', type: 'Flat Points', validity: '60 days', value: '250 pts', min: '₹0', start: '01 Apr 2026', end: '31 Dec 2026' },
+          { name: 'Weekend Double', type: 'Points Multiplier', validity: 'Sat-Sun', value: '2x Points', min: '₹500', start: '01 Apr 2026', end: '30 Apr 2026' },
+          { name: 'Festival Sale', type: 'Discount %', validity: '5 days', value: '15% OFF', min: '₹2,000', start: '10 Oct 2026', end: '15 Oct 2026' },
+        ].map((offer, i) => (
+          <div key={i} className="grid grid-cols-8 text-xs border-t border-gray-100 hover:bg-blue-50 transition-all">
+            <div className="px-4 py-3 font-medium text-gray-900">{offer.name}</div>
+            <div className="px-4 py-3 text-gray-600">{offer.type}</div>
+            <div className="px-4 py-3 text-gray-600">{offer.validity}</div>
+            <div className="px-4 py-3 font-semibold text-blue-600">{offer.value}</div>
+            <div className="px-4 py-3 text-gray-600">{offer.min}</div>
+            <div className="px-4 py-3 text-gray-600">{offer.start}</div>
+            <div className="px-4 py-3 text-gray-600">{offer.end}</div>
+            <div className="px-4 py-3">
+              <button className="text-gray-400 hover:text-red-500">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // ── OUTREACH CENTER ───────────────────────────────────────────────────────
+
+  const renderOutreach = () => (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Post-Visit Outreach</h1>
+      <p className="text-gray-500 text-sm mb-5">Reach customers across every channel — WhatsApp, SMS, Email, Instagram, and RCS. One platform.</p>
+      <div className="grid grid-cols-5 gap-3 mb-6">
+        {[
+          { ch: 'WhatsApp', icon: '💬', sent: 847, del: '98.7%', open: '87%', active: true },
+          { ch: 'SMS', icon: '📱', sent: 312, del: '99.1%', open: '62%', active: true },
+          { ch: 'Email', icon: '📧', sent: 534, del: '97.3%', open: '34%', active: true },
+          { ch: 'Instagram DM', icon: '📸', sent: 186, del: '96.5%', open: '71%', active: true },
+          { ch: 'RCS', icon: '💎', sent: 94, del: '95.8%', open: '58%', active: false },
+        ].map((ch) => (
+          <div key={ch.ch} className={`border-2 rounded-xl p-3 ${ch.active ? 'border-blue-600 bg-blue-50' : 'border-gray-200 border-dashed'}`}>
+            <div className="flex items-center space-x-1.5 mb-2">
+              <span className="text-lg">{ch.icon}</span>
+              <p className="font-semibold text-gray-900 text-xs">{ch.ch}</p>
+            </div>
+            {ch.active ? (
+              <div className="space-y-0.5 text-xs text-gray-600">
+                <div className="flex justify-between"><span>Sent</span><span className="font-medium">{ch.sent}</span></div>
+                <div className="flex justify-between"><span>Delivery</span><span className="font-medium text-blue-600">{ch.del}</span></div>
+                <div className="flex justify-between"><span>Opens</span><span className="font-medium text-blue-600">{ch.open}</span></div>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 italic">Coming soon</p>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="border border-gray-200 rounded-xl overflow-hidden">
+        <div className="px-5 py-3 bg-gray-50 border-b flex justify-between items-center">
+          <p className="font-semibold text-gray-900 text-sm">All Customers</p>
+          <button className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700">Bulk Send</button>
+        </div>
+        <div className="divide-y divide-gray-50">
+          {mockCustomers.map((c) => (
+            <div key={c.id} className="flex items-center space-x-4 px-5 py-3">
+              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">{c.avatar}</div>
+              <div className="flex-1"><p className="font-medium text-gray-900 text-sm">{c.name}</p><p className="text-xs text-gray-500">{c.tier} · Last: {c.lastVisit}</p></div>
+              <div className="flex space-x-1.5">
+                <button onClick={() => openOutreach(c)} className="text-xs bg-blue-600 text-white px-2 py-1.5 rounded-lg hover:bg-blue-700">💬</button>
+                <button onClick={() => { setOutreachTemplate(outreachTemplates[2]); setOutreachSent(false); setOutreachModal(c) }} className="text-xs bg-blue-600 text-white px-2 py-1.5 rounded-lg hover:bg-blue-700">📱</button>
+                <button onClick={() => { setOutreachTemplate(outreachTemplates[3]); setOutreachSent(false); setOutreachModal(c) }} className="text-xs bg-blue-600 text-white px-2 py-1.5 rounded-lg hover:bg-blue-700">📧</button>
+                <button onClick={() => { setOutreachTemplate(outreachTemplates[4]); setOutreachSent(false); setOutreachModal(c) }} className="text-xs bg-blue-600 text-white px-2 py-1.5 rounded-lg hover:bg-blue-700">📸</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── INSIGHTS ──────────────────────────────────────────────────────────────
+
+  const InsightCard = ({ label, value, hasFilter = true }: { label: string; value: string; hasFilter?: boolean }) => (
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-between min-h-36">
+      <div className="flex items-start justify-between">
+        <p className="text-gray-600 text-sm font-medium leading-tight">{label}</p>
+        {hasFilter && (
+          <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
+            <div className="flex items-center space-x-0.5">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+              <span className="bg-blue-400 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">1</span>
+            </div>
+            <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
+          </div>
+        )}
+      </div>
+      <p className="text-4xl font-black text-gray-900 mt-3">{value}</p>
+    </div>
+  )
+
+  const renderInsights = () => (
+    <div>
+      {/* Market & Competitor Landscape */}
+      <h2 className="text-xl font-bold text-gray-900 mb-4">Market &amp; Competitor Landscape</h2>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <InsightCard label="Total Engaged Customers" value="400" />
+        <InsightCard label="Avg Visit by A Customer" value="2.00" />
+        <InsightCard label="Total Marketable Customers" value="1.83M" />
+        <InsightCard label="Total Competitors" value="500" />
+      </div>
+
+      {/* Your Business Performance */}
+      <h2 className="text-xl font-bold text-gray-900 mb-4">Your Business Performance and Insights</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <InsightCard label="Your Total Customers" value="1,248" />
+        <InsightCard label="Your Customer Visit Count" value="4,720" />
+        <InsightCard label="Avg Visits by Customers" value="3.78" />
+      </div>
+
+      {/* Customer Journey Funnel */}
+      <h2 className="text-xl font-bold text-gray-900 mb-4">Customer Journey Funnel</h2>
+      <div className="grid grid-cols-5 gap-4 mb-8">
+        {[
+          { label: 'Walk-Ins', value: '214' },
+          { label: 'Profiles Captured', value: '198' },
+          { label: 'Staff Assisted', value: '143' },
+          { label: 'Purchased', value: '97' },
+          { label: 'Returned Again', value: '61' },
+        ].map((s, i) => (
+          <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
+            <p className="text-gray-600 text-sm font-medium mb-3">{s.label}</p>
+            <p className="text-3xl font-black text-gray-900">{s.value}</p>
+            {i < 4 && (
+              <div className="mt-2">
+                <div className="w-full bg-blue-50 rounded-full h-1.5">
+                  <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${[100, 92, 67, 45, 28][i]}%` }} />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">{[100, 92, 67, 45, 28][i]}% of walk-ins</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Channel Performance & Loyalty */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+        {/* Channel Performance */}
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Outreach Channel Performance</h2>
+          <div className="grid grid-cols-1 gap-3">
+            {[
+              { ch: '💬 WhatsApp', sent: '847', cvr: '41%', rev: '₹5.8L' },
+              { ch: '📧 Email', sent: '534', cvr: '18%', rev: '₹2.1L' },
+              { ch: '📸 Instagram DM', sent: '186', cvr: '32%', rev: '₹1.7L' },
+              { ch: '📱 SMS', sent: '312', cvr: '28%', rev: '₹1.9L' },
+              { ch: '💎 RCS', sent: '94', cvr: '22%', rev: '₹0.6L' },
+            ].map((c) => (
+              <div key={c.ch} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{c.ch}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{c.sent} sent · {c.cvr} conversion</p>
+                </div>
+                <p className="text-2xl font-black text-gray-900">{c.rev}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Loyalty Breakdown */}
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Loyalty Tier Breakdown</h2>
+          <div className="grid grid-cols-1 gap-3">
+            {[
+              { tier: 'Platinum', count: '12', avg: '₹1.2L avg spend', pct: 80 },
+              { tier: 'Gold', count: '48', avg: '₹38K avg spend', pct: 55 },
+              { tier: 'Silver', count: '154', avg: '₹12K avg spend', pct: 30 },
+            ].map(t => (
+              <div key={t.tier} className="bg-white border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${tierBadge(t.tier)}`}>{t.tier}</span>
+                    <span className="text-xs text-gray-500">{t.avg}</span>
+                  </div>
+                  <p className="text-2xl font-black text-gray-900">{t.count}</p>
+                </div>
+                <div className="w-full bg-blue-50 rounded-full h-1.5">
+                  <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${t.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ROI card */}
+          <div className="bg-blue-600 rounded-xl p-5 mt-3 flex items-center justify-between">
+            <div>
+              <p className="text-blue-200 text-xs font-medium">Platform ROI — All 5 Channels</p>
+              <p className="text-blue-100 text-xs mt-0.5">Total attributed revenue this month</p>
+            </div>
+            <div className="text-right">
+              <p className="text-4xl font-black text-white">41x</p>
+              <p className="text-blue-200 text-xs">return on spend</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const views: Record<View, () => JSX.Element | null> = {
+    'checkin-flow': renderCheckinFlow,
+    'dashboard': renderDashboard,
+    'customer-detail': renderCustomerDetail,
+    'rewards': renderRewards,
+    'outreach': renderOutreach,
+    'insights': renderInsights,
+  }
+
+  // ── RENDER ────────────────────────────────────────────────────────────────
+
+  return (
+    <div className="flex flex-col h-screen bg-white overflow-hidden">
+      {/* Header */}
+      <header className="bg-blue-600 text-white px-4 py-2 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center space-x-4">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-white hover:text-blue-200 p-1"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg></button>
+          <h2 className="text-lg font-bold italic text-yellow-400">modenX</h2>
+        </div>
         <div className="flex items-center space-x-2 bg-blue-700 px-4 py-2 rounded cursor-pointer hover:bg-blue-800">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v10z"/>
-          </svg>
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v10z"/></svg>
           <span className="text-sm font-medium">Ensemble</span>
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
         </div>
-
         <div className="flex items-center space-x-3">
-          {/* Search */}
           <div className="flex items-center bg-white text-gray-700 px-4 py-2 rounded-md space-x-2 min-w-64">
-            <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
+            <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
             <span className="text-sm text-gray-600 flex-1">27/1, Haralur Main R...</span>
-            <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
           </div>
-          {/* Bell */}
           <div className="relative">
-            <div className="bg-white text-blue-600 p-2 rounded">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-              </svg>
-            </div>
+            <div className="bg-white text-blue-600 p-2 rounded"><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></div>
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">2</span>
           </div>
         </div>
       </header>
 
-      {/* ── BODY: SIDEBAR + MAIN ── */}
       <div className="flex flex-1 overflow-hidden">
-
-        {/* ── SIDEBAR ── */}
+        {/* Sidebar */}
         {sidebarOpen && (
-          <div className="w-72 bg-blue-600 text-white flex flex-col flex-shrink-0 overflow-y-auto">
-            <div className="p-4 border-b border-blue-500">
-              <h1 className="text-base font-bold italic text-yellow-400">MODENX</h1>
+          <div className="w-56 bg-blue-600 text-white flex flex-col flex-shrink-0 overflow-y-auto">
+            <div className="p-3 border-b border-blue-500">
+              <p className="text-xs font-bold italic text-yellow-400">MODENX</p>
+              <p className="text-blue-200 text-xs">Offline Customer Platform</p>
             </div>
             <nav className="flex-1 py-1">
-              {NAV_ITEMS.map((item) => {
-                const isActive = item.label === activeNav
+              <p className="px-4 pt-3 pb-1 text-xs text-blue-300 font-semibold uppercase tracking-wider">Core</p>
+              {NAV.map((item) => {
+                const isActive = item.view === activeView || (item.view === 'dashboard' && activeView === 'customer-detail')
                 return (
-                  <div
-                    key={item.label}
-                    onClick={() => item.step && setCurrentStep(item.step)}
-                    className={`flex items-center px-5 py-3 text-sm transition-all ${
-                      isActive
-                        ? 'bg-white text-blue-700 font-semibold border-r-4 border-blue-700'
-                        : 'hover:bg-blue-700 text-white'
-                    } ${item.step ? 'cursor-pointer' : 'cursor-default opacity-70'}`}
-                  >
-                    <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                      <path d={item.icon} />
-                    </svg>
+                  <div key={item.label} onClick={() => { setActiveView(item.view); setSelectedCustomer(null) }}
+                    className={`flex items-center px-4 py-2.5 text-sm cursor-pointer transition-all ${isActive ? 'bg-white text-blue-700 font-semibold' : 'hover:bg-blue-700'}`}>
+                    <svg className="w-4 h-4 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d={item.icon} /></svg>
                     <span>{item.label}</span>
                   </div>
                 )
               })}
+              <p className="px-4 pt-4 pb-1 text-xs text-blue-300 font-semibold uppercase tracking-wider">More</p>
+              {NAV_OTHER.map((item) => (
+                <div key={item.label} className="flex items-center px-4 py-2.5 text-sm opacity-60 cursor-default">
+                  <svg className="w-4 h-4 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d={item.icon} /></svg>
+                  <span>{item.label}</span>
+                </div>
+              ))}
             </nav>
           </div>
         )}
 
-        {/* ── MAIN CONTENT ── */}
+        {/* Main */}
         <main className="flex-1 overflow-y-auto bg-white">
-          <div className="p-8 max-w-5xl mx-auto">
-
-            {/* ── STEP 1: QR SCAN ── */}
-            {currentStep === 'checkin-qr' && (
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">Download QR Code</h1>
-                <p className="text-gray-500 mb-6 text-sm">Share this QR at your store entrance. Customers scan to check in — no app required.</p>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                  <div className="space-y-4">
-                    {[
-                      { icon: '🔐', title: 'Unique per Store', desc: 'Every retailer gets a dedicated QR linked to their MODENX account' },
-                      { icon: '📲', title: 'No App Needed', desc: 'Opens instantly in the customer\'s browser — zero friction' },
-                      { icon: '⚡', title: 'Instant Notification', desc: 'Retailer gets a real-time ping the moment any customer scans' },
-                      { icon: '💬', title: 'WhatsApp Opt-In Captured', desc: 'Consent collected at check-in — Meta Business API compliant' },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-start space-x-4 border border-gray-200 rounded-lg p-4">
-                        <span className="text-2xl flex-shrink-0">{item.icon}</span>
-                        <div>
-                          <p className="font-semibold text-gray-900 text-sm">{item.title}</p>
-                          <p className="text-gray-500 text-xs mt-0.5">{item.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* QR Card */}
-                  <div className="flex justify-center">
-                    <div className="border border-gray-200 rounded-2xl p-6 w-72 text-center shadow-sm">
-                      <div className="bg-blue-600 rounded-xl p-4 mb-4">
-                        <p className="text-yellow-400 font-bold italic text-lg">modenX</p>
-                        <p className="text-blue-200 text-xs mt-0.5">Ensemble · HSR Layout, Bengaluru</p>
-                      </div>
-                      {/* QR visual */}
-                      <div className="border-2 border-gray-200 rounded-xl p-3 mb-4 mx-auto w-44 h-44 flex items-center justify-center relative bg-white">
-                        <div className="grid grid-cols-7 gap-0.5 w-36 h-36">
-                          {Array.from({ length: 49 }).map((_, i) => {
-                            const corner = [0,1,7,8,5,6,13,14,35,36,43,44,40,41,47,48].includes(i)
-                            const rand = [2,10,18,22,25,30,33,38,46,3,19,27,31].includes(i)
-                            return <div key={i} className={`w-full h-full ${corner ? 'bg-blue-700' : rand ? 'bg-blue-900' : 'bg-white'}`} />
-                          })}
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-white p-1 rounded shadow">
-                            <div className="bg-blue-600 w-8 h-8 rounded flex items-center justify-center">
-                              <span className="text-white font-black text-xs">MX</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <button className="w-full border-2 border-blue-600 text-blue-600 font-semibold py-2 rounded-lg text-sm hover:bg-blue-50">
-                        Download QR Code
-                      </button>
-                      <div className="mt-3 flex items-center justify-center space-x-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs text-blue-600 font-medium">Store Open · 47 visits today</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── STEP 2: CHECK-IN FORM ── */}
-            {currentStep === 'checkin-form' && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-1">Customer Check-In</h1>
-                  <p className="text-gray-500 mb-6 text-sm">After scanning the QR, the customer fills a lightweight web form. Returning customers are pre-filled via phone lookup.</p>
-                  <div className="border border-blue-100 bg-blue-50 rounded-lg p-4">
-                    <p className="text-blue-800 font-semibold text-sm">WhatsApp Opt-In</p>
-                    <p className="text-blue-700 text-xs mt-1">Explicit consent is captured here — required for Meta Business API outreach. Fully compliant.</p>
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {[
-                      'Customer arrives → scans store QR code',
-                      'Browser opens check-in form instantly',
-                      'New customer fills details in ~30 seconds',
-                      'Returning customer is auto pre-filled',
-                      'Retailer gets live notification on dashboard',
-                    ].map((step, i) => (
-                      <div key={i} className="flex items-center space-x-3">
-                        <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</div>
-                        <p className="text-sm text-gray-700">{step}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Phone mockup */}
-                <div className="flex justify-center">
-                  <div className="w-68 bg-gray-900 rounded-3xl p-3 shadow-2xl">
-                    <div className="bg-white rounded-2xl overflow-hidden">
-                      <div className="bg-gray-800 px-4 py-1.5 flex justify-between">
-                        <span className="text-white text-xs">9:41 AM</span>
-                        <span className="text-white text-xs">●●●</span>
-                      </div>
-                      <div className="bg-gray-100 px-3 py-1.5">
-                        <div className="bg-white rounded text-xs text-gray-500 px-2 py-0.5">checkin.modenx.in/tattva</div>
-                      </div>
-                      <div className="p-4">
-                        <div className="text-center mb-4">
-                          <p className="text-blue-600 font-bold italic text-base">modenX</p>
-                          <p className="text-gray-500 text-xs">Ensemble · HSR Layout</p>
-                        </div>
-                        <div className="space-y-2.5">
-                          <div>
-                            <p className="text-xs text-gray-500">Full Name *</p>
-                            <div className="border border-gray-300 rounded px-2 py-1.5 text-xs bg-gray-50 mt-0.5">Priya Sharma</div>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">WhatsApp Number *</p>
-                            <div className="border border-gray-300 rounded px-2 py-1.5 text-xs bg-gray-50 mt-0.5">+91 98765 43210</div>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Preferences</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {['Ethnic Wear', 'Western', 'Formals', 'Bags'].map(p => (
-                                <span key={p} className={`text-xs px-2 py-0.5 rounded-full border ${p === 'Ethnic Wear' ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-500'}`}>{p}</span>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="flex items-start space-x-2 bg-blue-50 rounded p-2">
-                            <div className="w-3 h-3 bg-blue-600 rounded-sm flex items-center justify-center mt-0.5 flex-shrink-0">
-                              <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                            </div>
-                            <p className="text-xs text-blue-700">I agree to receive offers on WhatsApp from this store</p>
-                          </div>
-                          <button className="w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded-lg">Check In ✓</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── STEP 3: CONFIRMED ── */}
-            {currentStep === 'checkin-confirmed' && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-1">Check-In Confirmed</h1>
-                  <p className="text-gray-500 mb-6 text-sm">The customer sees a personalised welcome. The retailer gets an instant dashboard notification with visit history and preferences.</p>
-
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <p className="text-sm font-semibold text-gray-700 mb-3">Retailer notification:</p>
-                    <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                      <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">PS</div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900 text-sm">Priya Sharma checked in</p>
-                        <p className="text-gray-500 text-xs">Gold Member · 7 visits · Loves Ethnic Wear · 2,450 pts</p>
-                      </div>
-                      <span className="text-xs text-blue-600 font-medium">Just now</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Customer phone */}
-                <div className="flex justify-center">
-                  <div className="w-68 bg-gray-900 rounded-3xl p-3 shadow-2xl">
-                    <div className="bg-white rounded-2xl overflow-hidden">
-                      <div className="bg-gray-800 px-4 py-1.5 flex justify-between">
-                        <span className="text-white text-xs">9:41 AM</span>
-                        <span className="text-white text-xs">●●●</span>
-                      </div>
-                      <div className="p-6 text-center">
-                        <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                          <svg className="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <p className="text-blue-600 font-bold italic mb-1">modenX</p>
-                        <p className="text-xl font-bold text-gray-900">Welcome back,</p>
-                        <p className="text-xl font-bold text-blue-600 mb-3">Priya! 🎉</p>
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                          <p className="text-blue-800 font-semibold text-sm">🏆 Gold Member</p>
-                          <p className="text-blue-600 text-xs mt-0.5">2,450 reward points · ₹245 off today</p>
-                        </div>
-                        <div className="text-left space-y-1.5 text-xs text-gray-600">
-                          <div className="flex justify-between"><span>Total Visits</span><span className="font-semibold text-gray-900">7 times</span></div>
-                          <div className="flex justify-between"><span>Last Visit</span><span className="font-semibold text-gray-900">12 Mar 2026</span></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── STEP 4: LIVE DASHBOARD ── */}
-            {currentStep === 'retailer-dashboard' && (
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Live Customers</h1>
-
-                {/* Filter Tabs — matching actual app style */}
-                <div className="flex items-center space-x-3 mb-6 flex-wrap gap-y-2">
-                  {[
-                    { label: 'Live Customers', value: '3' },
-                    { label: 'Last 12 Hours', value: '18' },
-                    { label: 'Last 24 Hours', value: '47' },
-                    { label: 'Last 1 Week', value: '214' },
-                  ].map((tab, i) => (
-                    <button key={i} className={`border-2 border-blue-600 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${i === 0 ? 'bg-blue-600 text-white' : 'text-blue-600 bg-white hover:bg-blue-50'}`}>
-                      {tab.label} : {tab.value}
-                    </button>
-                  ))}
-                  <div className="ml-auto flex items-center border border-gray-300 rounded-lg px-3 py-2 min-w-52 space-x-2">
-                    <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                    <span className="text-sm text-gray-400">Search Customer</span>
-                    <svg className="w-4 h-4 text-gray-400 ml-auto" fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-                  </div>
-                </div>
-
-                {/* Customer Cards */}
-                <div className="space-y-3">
-                  {mockCustomers.map((c) => (
-                    <div
-                      key={c.id}
-                      className={`flex items-center space-x-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedCustomer.id === c.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}
-                      onClick={() => setSelectedCustomer(c)}
-                    >
-                      <div className="w-11 h-11 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">{c.avatar}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <p className="font-semibold text-gray-900">{c.name}</p>
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tierBadge(c.tier)}`}>{c.tier}</span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-0.5">{c.phone} · Checked in {c.checkInTime} · {c.visits} total visits</p>
-                        <div className="flex items-center space-x-2 mt-1">
-                          {c.preferences.slice(0, 2).map(p => (
-                            <span key={p} className="border border-blue-200 text-blue-700 text-xs px-2 py-0.5 rounded-full">{p}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="text-right flex-shrink-0 space-y-1">
-                        <div className="flex items-center space-x-1 justify-end">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                          <span className="text-xs text-blue-600 font-medium">In Store</span>
-                        </div>
-                        <p className="text-xs text-gray-400">{c.points.toLocaleString()} pts</p>
-                        <button
-                          className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700"
-                          onClick={(e) => { e.stopPropagation(); setModalTemplate(whatsappTemplates[0]); setModalSent(false); setWhatsappModal({ customer: c }) }}
-                        >
-                          Send WhatsApp
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── STEP 5: WHATSAPP SELECT ── */}
-            {currentStep === 'whatsapp-select' && (
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">WhatsApp Campaigns</h1>
-                <p className="text-gray-500 mb-6 text-sm">Reach checked-in customers individually or in bulk — by tier, preference, or recency.</p>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="border border-gray-200 rounded-xl p-4">
-                    <p className="font-semibold text-gray-900 text-sm mb-3">Outreach Type</p>
-                    {[
-                      { type: 'Individual', desc: 'One customer', icon: '👤', active: true },
-                      { type: 'By Tier', desc: 'Gold, Platinum...', icon: '🏆', active: false },
-                      { type: 'By Preference', desc: 'Ethnic, Western...', icon: '🛍️', active: false },
-                      { type: 'All Checked-In Today', desc: '47 customers', icon: '🏪', active: false },
-                    ].map((opt) => (
-                      <div key={opt.type} className={`flex items-center space-x-3 p-3 rounded-lg border mb-2 cursor-pointer ${opt.active ? 'border-blue-600 bg-blue-50' : 'border-gray-100 hover:border-blue-200'}`}>
-                        <span>{opt.icon}</span>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{opt.type}</p>
-                          <p className="text-xs text-gray-400">{opt.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="lg:col-span-2 border border-gray-200 rounded-xl overflow-hidden">
-                    <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                      <p className="font-semibold text-gray-900 text-sm">Select Customer</p>
-                      <span className="text-xs text-gray-500">3 in store now</span>
-                    </div>
-                    <div className="divide-y divide-gray-50">
-                      {mockCustomers.map((c) => (
-                        <div key={c.id} className={`flex items-center space-x-4 px-4 py-3 cursor-pointer ${selectedCustomer.id === c.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`} onClick={() => setSelectedCustomer(c)}>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedCustomer.id === c.id ? 'border-blue-600 bg-blue-600' : 'border-gray-300'}`}>
-                            {selectedCustomer.id === c.id && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
-                          </div>
-                          <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs">{c.avatar}</div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-gray-900 text-sm">{c.name}</p>
-                            <p className="text-xs text-gray-500">{c.tier} · {c.preferences[0]} · {c.phone}</p>
-                          </div>
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tierBadge(c.tier)}`}>{c.tier}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="p-4 border-t border-gray-100">
-                      <button className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 flex items-center justify-center space-x-2" onClick={() => setCurrentStep('whatsapp-compose')}>
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
-                        <span>Send WhatsApp to {selectedCustomer.name.split(' ')[0]}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── STEP 6: COMPOSE ── */}
-            {currentStep === 'whatsapp-compose' && (
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">Compose Message</h1>
-                <p className="text-gray-500 mb-6 text-sm">Pick a Meta-approved template — auto-personalised with the customer&apos;s name, tier, and preferences.</p>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Templates */}
-                  <div className="border border-gray-200 rounded-xl overflow-hidden">
-                    <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
-                      <p className="font-semibold text-gray-900 text-sm">Approved Templates</p>
-                      <p className="text-xs text-gray-400 mt-0.5">All Meta Business API approved</p>
-                    </div>
-                    <div className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
-                      {whatsappTemplates.map((t) => (
-                        <div key={t.id} className={`p-4 cursor-pointer border-l-4 transition-all ${selectedTemplate.id === t.id ? 'border-blue-600 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`} onClick={() => setSelectedTemplate(t)}>
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-900 text-sm">{t.name}</p>
-                              <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded mt-1 inline-block">{t.category}</span>
-                              <p className="text-xs text-gray-400 mt-1 line-clamp-2">{t.body.replace(/{{.*?}}/g, '...')}</p>
-                            </div>
-                            <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium flex-shrink-0">Approved</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Preview */}
-                  <div>
-                    <div className="border border-gray-200 rounded-xl p-4 mb-4">
-                      <p className="font-semibold text-gray-900 text-sm mb-2">Sending to:</p>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs">{selectedCustomer.avatar}</div>
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">{selectedCustomer.name}</p>
-                          <p className="text-xs text-gray-500">{selectedCustomer.phone} · WhatsApp Opt-in ✓</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Chat preview */}
-                    <div className="rounded-xl overflow-hidden border border-gray-200">
-                      <div className="bg-blue-700 px-4 py-3 flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                          <span className="text-blue-700 font-bold text-xs">MX</span>
-                        </div>
-                        <div>
-                          <p className="text-white text-sm font-semibold">MODENX · Ensemble</p>
-                          <p className="text-blue-200 text-xs">Business Account · Meta Verified</p>
-                        </div>
-                      </div>
-                      <div className="bg-blue-50 p-4 min-h-28">
-                        <div className="max-w-xs bg-white rounded-tr-xl rounded-b-xl shadow-sm p-3 ml-auto">
-                          <p className="text-gray-800 text-xs leading-relaxed">{fillTemplate(selectedTemplate, selectedCustomer)}</p>
-                          <div className="flex justify-end items-center space-x-1 mt-1">
-                            <span className="text-gray-400 text-xs">10:32 AM</span>
-                            <svg className="w-3.5 h-3.5 text-blue-500" fill="currentColor" viewBox="0 0 16 15"><path d="M15.01 3.316l-.478-.372a.365.365 0 00-.51.063L8.666 9.879a.32.32 0 01-.484.033l-.358-.325a.319.319 0 00-.484.032l-.378.483a.418.418 0 00.036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 00-.064-.512zm-4.1 0l-.478-.372a.365.365 0 00-.51.063L4.566 9.879a.32.32 0 01-.484.033L1.891 7.769a.366.366 0 00-.515.006l-.423.433a.364.364 0 00.006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 00-.063-.51z"/></svg>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button className="mt-4 w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-700 flex items-center justify-center space-x-2" onClick={() => setCurrentStep('whatsapp-sent')}>
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                      <span>Send via WhatsApp Business API</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── STEP 7: SENT ── */}
-            {currentStep === 'whatsapp-sent' && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-1">Message Delivered</h1>
-                  <p className="text-gray-500 mb-6 text-sm">Delivered via Meta Business API with live tracking — retailer sees delivery, read receipts, and replies in real time.</p>
-                  <div className="space-y-3">
-                    {[
-                      { label: 'Sent via API', time: '10:32:01 AM', shade: 'bg-blue-300' },
-                      { label: 'Delivered to Device', time: '10:32:03 AM', shade: 'bg-blue-400' },
-                      { label: 'Read by Customer', time: '10:35:22 AM', shade: 'bg-blue-600' },
-                      { label: 'Customer Replied', time: '10:41:05 AM', shade: 'bg-blue-800' },
-                    ].map((s, i) => (
-                      <div key={i} className="flex items-center space-x-3 border border-gray-200 rounded-lg p-3">
-                        <div className={`w-3 h-3 rounded-full flex-shrink-0 ${s.shade}`}></div>
-                        <p className="text-sm font-medium text-gray-900 flex-1">{s.label}</p>
-                        <span className="text-xs text-gray-400">{s.time}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Phone — customer view */}
-                <div className="flex justify-center">
-                  <div className="w-68 bg-gray-900 rounded-3xl p-3 shadow-2xl">
-                    <div className="rounded-2xl overflow-hidden">
-                      <div className="bg-blue-700 px-3 py-2.5 flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-blue-700 font-black text-xs">MX</span>
-                        </div>
-                        <div>
-                          <p className="text-white text-xs font-semibold">MODENX · Ensemble</p>
-                          <p className="text-blue-200 text-xs">Business · Verified</p>
-                        </div>
-                      </div>
-                      <div className="bg-blue-50 p-3 space-y-3 min-h-52">
-                        <div className="bg-white rounded-tr-xl rounded-b-xl shadow-sm p-2.5 max-w-52">
-                          <p className="text-gray-800 text-xs leading-relaxed">{fillTemplate(selectedTemplate, selectedCustomer)}</p>
-                          <div className="flex justify-end items-center space-x-1 mt-1">
-                            <span className="text-gray-400 text-xs">10:32 AM</span>
-                            <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 16 15"><path d="M15.01 3.316l-.478-.372a.365.365 0 00-.51.063L8.666 9.879a.32.32 0 01-.484.033l-.358-.325a.319.319 0 00-.484.032l-.378.483a.418.418 0 00.036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 00-.064-.512zm-4.1 0l-.478-.372a.365.365 0 00-.51.063L4.566 9.879a.32.32 0 01-.484.033L1.891 7.769a.366.366 0 00-.515.006l-.423.433a.364.364 0 00.006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 00-.063-.51z"/></svg>
-                          </div>
-                        </div>
-                        <div className="bg-blue-600 rounded-tl-xl rounded-b-xl shadow-sm p-2.5 max-w-44 ml-auto">
-                          <p className="text-white text-xs">Yes! Coming to billing right now 😊</p>
-                          <p className="text-blue-200 text-xs text-right mt-1">10:41 AM</p>
-                        </div>
-                      </div>
-                      <div className="bg-white px-3 py-2 flex items-center space-x-2 border-t border-blue-100">
-                        <div className="flex-1 bg-blue-50 rounded-full px-3 py-1.5 text-xs text-gray-400">Message</div>
-                        <div className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center">
-                          <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── STEP 8: ANALYTICS ── */}
-            {currentStep === 'analytics' && (
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">Insights</h1>
-                <p className="text-gray-500 mb-6 text-sm">Full visibility from check-in to purchase — measure the ROI of every WhatsApp message sent.</p>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  {[
-                    { label: 'Messages Sent Today', value: '31', sub: '+12% vs yesterday', border: 'border-blue-300' },
-                    { label: 'Delivery Rate', value: '98.7%', sub: 'Meta verified', border: 'border-blue-400' },
-                    { label: 'Open Rate', value: '87.3%', sub: 'Industry avg: 62%', border: 'border-blue-600' },
-                    { label: 'Conversion Rate', value: '41%', sub: '13 purchases driven', border: 'border-blue-800' },
-                  ].map((k, i) => (
-                    <div key={i} className={`bg-white border-l-4 ${k.border} border border-gray-200 rounded-xl p-5 shadow-sm`}>
-                      <p className="text-3xl font-black text-blue-600">{k.value}</p>
-                      <p className="text-gray-700 text-sm font-medium mt-1">{k.label}</p>
-                      <p className="text-gray-400 text-xs mt-0.5">{k.sub}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-4">Template Performance</h3>
-                    <div className="space-y-4">
-                      {[
-                        { name: 'Welcome Back Offer', rate: 50, sent: 18, purchased: 9 },
-                        { name: 'New Arrivals Alert', rate: 38, sent: 8, purchased: 3 },
-                        { name: 'Loyalty Points Reminder', rate: 20, sent: 5, purchased: 1 },
-                      ].map((t, i) => (
-                        <div key={i}>
-                          <div className="flex justify-between mb-1">
-                            <p className="text-sm text-gray-700 font-medium">{t.name}</p>
-                            <span className="text-xs font-bold text-blue-600">{t.rate}% CVR</span>
-                          </div>
-                          <div className="w-full bg-blue-50 rounded-full h-2">
-                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${t.rate * 2}%` }} />
-                          </div>
-                          <p className="text-xs text-gray-400 mt-1">{t.sent} sent · {t.purchased} purchased</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-semibold text-gray-900 mb-4">Revenue Attributed to WhatsApp</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Today&apos;s Revenue</p>
-                          <p className="text-xs text-gray-500">13 converted customers</p>
-                        </div>
-                        <p className="text-2xl font-black text-blue-600">₹21,450</p>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-blue-100 rounded-lg border border-blue-200">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">This Month</p>
-                          <p className="text-xs text-gray-500">847 msgs · 312 conversions</p>
-                        </div>
-                        <p className="text-2xl font-black text-blue-700">₹5.8L</p>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Cost Per Message</p>
-                          <p className="text-xs text-gray-500">via Meta Business API</p>
-                        </div>
-                        <p className="text-2xl font-black text-blue-500">₹0.60</p>
-                      </div>
-                      <div className="bg-blue-600 rounded-xl p-4 text-center">
-                        <p className="text-blue-200 text-xs mb-1">Return on Investment</p>
-                        <p className="text-5xl font-black text-white">41x</p>
-                        <p className="text-blue-200 text-xs mt-1">Every ₹1 spent → ₹41 revenue</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── NAV BUTTONS ── */}
-            <div className="flex items-center justify-between mt-10 pt-6 border-t border-gray-200">
-              <button onClick={goPrev} disabled={currentIdx === 0}
-                className="flex items-center space-x-2 px-5 py-2.5 rounded-lg border-2 border-blue-600 text-blue-600 font-medium text-sm hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                <span>Previous</span>
-              </button>
-              <span className="text-sm text-gray-400">{currentIdx + 1} / {STEPS.length}</span>
-              <button onClick={goNext} disabled={currentIdx === STEPS.length - 1}
-                className="flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 disabled:opacity-30 disabled:cursor-not-allowed">
-                <span>Next</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
+          <div className="p-6 max-w-5xl mx-auto">
+            {views[activeView]()}
           </div>
         </main>
       </div>
 
-      {/* ── WHATSAPP TEMPLATE MODAL ── */}
-      {whatsappModal && (
+      {/* ── OUTREACH MODAL ── */}
+      {outreachModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/40" onClick={() => setWhatsappModal(null)} />
-
-          {/* Panel */}
+          <div className="absolute inset-0 bg-black/40" onClick={() => setOutreachModal(null)} />
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
-
-            {/* Modal Header */}
             <div className="bg-blue-600 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-9 h-9 bg-white text-blue-700 rounded-full flex items-center justify-center font-bold text-sm">
-                  {whatsappModal.customer.avatar}
-                </div>
+                <div className="w-9 h-9 bg-white text-blue-700 rounded-full flex items-center justify-center font-bold text-sm">{outreachModal.avatar}</div>
                 <div>
-                  <p className="text-white font-semibold text-sm">{whatsappModal.customer.name}</p>
-                  <p className="text-blue-200 text-xs">{whatsappModal.customer.phone} · {whatsappModal.customer.tier} Member · WhatsApp Opt-in ✓</p>
+                  <p className="text-white font-semibold text-sm">{outreachModal.name}</p>
+                  <p className="text-blue-200 text-xs">{outreachModal.phone} {outreachModal.email ? `· ${outreachModal.email}` : ''} {outreachModal.instagram ? `· ${outreachModal.instagram}` : ''}</p>
+                  <div className="flex items-center space-x-1.5 mt-1">
+                    {[
+                      { icon: '💬', on: outreachModal.channels.whatsapp },
+                      { icon: '📱', on: outreachModal.channels.sms },
+                      { icon: '📧', on: outreachModal.channels.email },
+                      { icon: '📸', on: outreachModal.channels.instagram },
+                    ].map((ch, i) => (
+                      <span key={i} className={`text-xs ${ch.on ? 'opacity-100' : 'opacity-30'}`}>{ch.icon}</span>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <button onClick={() => setWhatsappModal(null)} className="text-blue-200 hover:text-white">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <button onClick={() => setOutreachModal(null)} className="text-blue-200 hover:text-white"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
-
-            {!modalSent ? (
+            {!outreachSent ? (
               <div className="flex divide-x divide-gray-100 max-h-[70vh]">
-
-                {/* Template List */}
-                <div className="w-64 flex-shrink-0 overflow-y-auto">
-                  <p className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">Choose Template</p>
-                  {whatsappTemplates.map((t) => (
-                    <div
-                      key={t.id}
-                      onClick={() => setModalTemplate(t)}
-                      className={`px-4 py-3 cursor-pointer border-l-4 transition-all ${modalTemplate.id === t.id ? 'border-blue-600 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`}
-                    >
+                <div className="w-56 flex-shrink-0 overflow-y-auto">
+                  <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase border-b border-gray-100">Templates</p>
+                  {outreachTemplates.map((t) => (
+                    <div key={t.id} onClick={() => setOutreachTemplate(t)}
+                      className={`px-4 py-3 cursor-pointer border-l-4 ${outreachTemplate.id === t.id ? 'border-blue-600 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`}>
                       <p className="text-sm font-medium text-gray-900">{t.name}</p>
-                      <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded mt-1 inline-block">{t.category}</span>
+                      <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded mt-0.5 inline-block">{t.channel}</span>
                     </div>
                   ))}
                 </div>
-
-                {/* Preview Pane */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  <p className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">Preview</p>
-
-                  {/* WhatsApp chat bubble preview */}
+                <div className="flex-1 flex flex-col">
                   <div className="flex-1 bg-blue-50 p-5 overflow-y-auto">
                     <div className="max-w-xs bg-white rounded-tr-xl rounded-b-xl shadow-sm p-4">
-                      <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
-                        {fillTemplate(modalTemplate, whatsappModal.customer)}
-                      </p>
-                      <div className="flex justify-end items-center space-x-1 mt-2">
-                        <span className="text-gray-400 text-xs">Now</span>
-                        <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 16 15">
-                          <path d="M15.01 3.316l-.478-.372a.365.365 0 00-.51.063L8.666 9.879a.32.32 0 01-.484.033l-.358-.325a.319.319 0 00-.484.032l-.378.483a.418.418 0 00.036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 00-.064-.512zm-4.1 0l-.478-.372a.365.365 0 00-.51.063L4.566 9.879a.32.32 0 01-.484.033L1.891 7.769a.366.366 0 00-.515.006l-.423.433a.364.364 0 00.006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 00-.063-.51z"/>
-                        </svg>
-                      </div>
+                      <p className="text-gray-800 text-sm leading-relaxed">{fillTemplate(outreachTemplate, outreachModal)}</p>
+                      <p className="text-right text-gray-400 text-xs mt-2">Now ✓✓</p>
                     </div>
                   </div>
-
-                  {/* Send button */}
-                  <div className="px-5 py-4 border-t border-gray-100 bg-white">
-                    <button
-                      className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-700 flex items-center justify-center space-x-2"
-                      onClick={() => setModalSent(true)}
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/>
-                      </svg>
-                      <span>Send to {whatsappModal.customer.name.split(' ')[0]} via WhatsApp</span>
+                  <div className="px-5 py-4 border-t bg-white">
+                    <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-700" onClick={() => setOutreachSent(true)}>
+                      Send via {outreachTemplate.channel}
                     </button>
                   </div>
                 </div>
               </div>
             ) : (
-              /* Sent confirmation */
               <div className="p-10 text-center">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Message Sent!</h3>
-                <p className="text-gray-500 text-sm mb-1">
-                  <span className="font-semibold text-blue-600">{modalTemplate.name}</span> sent to {whatsappModal.customer.name}
-                </p>
-                <p className="text-gray-400 text-xs mb-6">{whatsappModal.customer.phone} · Delivered via Meta Business API</p>
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                  <span className="text-xs text-gray-500">Sent</span>
-                  <div className="w-8 h-0.5 bg-blue-300"></div>
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-xs text-gray-500">Delivered</span>
-                  <div className="w-8 h-0.5 bg-blue-200"></div>
-                  <div className="w-2 h-2 bg-blue-200 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-gray-400">Awaiting read...</span>
-                </div>
-                <button
-                  className="mt-6 border-2 border-blue-600 text-blue-600 px-6 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50"
-                  onClick={() => setWhatsappModal(null)}
-                >
-                  Close
-                </button>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">Sent!</h3>
+                <p className="text-gray-500 text-sm mb-4">{outreachTemplate.name} → {outreachModal.name} via {outreachTemplate.channel}</p>
+                <button className="border-2 border-blue-600 text-blue-600 px-6 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50" onClick={() => setOutreachModal(null)}>Close</button>
               </div>
             )}
           </div>
