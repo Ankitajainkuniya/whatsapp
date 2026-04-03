@@ -96,6 +96,7 @@ export default function Dashboard() {
   const [customerTab, setCustomerTab] = useState<'profile' | 'journey' | 'assist' | 'billing'>('profile')
   const [checkinStep, setCheckinStep] = useState<1 | 2 | 3 | 4>(1)
   const [repeatStep, setRepeatStep] = useState<1 | 2 | 3 | 4>(1)
+  const [expandedCard, setExpandedCard] = useState<string | null>('C001')
   const [taggedItems, setTaggedItems] = useState<string[]>([])
   const [staffNote, setStaffNote] = useState('')
   const [pointsApplied, setPointsApplied] = useState(false)
@@ -357,56 +358,124 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ── Step 4: Live on Dashboard ── */}
+        {/* ── Step 4: Live on Dashboard (Grid View) ── */}
         {checkinStep === 4 && (
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Customer Appears on Live Dashboard</h2>
-            <p className="text-gray-500 text-sm mb-5">The retailer now sees the customer on their dashboard with full context — ready to assist, bill, or reach out later on any channel.</p>
-
-            <div className="border border-gray-200 rounded-xl overflow-hidden mb-5">
-              <div className="bg-blue-600 px-5 py-3 flex items-center justify-between">
-                <div className="flex items-center space-x-2"><div className="w-2 h-2 bg-blue-300 rounded-full animate-pulse" /><span className="text-white text-sm font-semibold">Live Customers — Ensemble Store</span></div>
-                <span className="text-blue-200 text-xs">3 in store now</span>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Customer Appears on Live Dashboard</h2>
+                <p className="text-gray-500 text-sm mt-1">Click any card to expand full details. The retailer sees everyone in-store at a glance.</p>
               </div>
-              <div className="divide-y divide-gray-50">
-                {mockCustomers.map((c, i) => (
-                  <div key={c.id} className={`flex items-center space-x-4 px-5 py-3 ${i === 0 ? 'bg-blue-50 border-l-4 border-blue-600' : ''}`}>
-                    <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">{c.avatar}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <p className="font-semibold text-gray-900 text-sm">{c.name}</p>
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${tierBadge(c.tier)}`}>{c.tier}</span>
-                        {i === 0 && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Just checked in</span>}
-                      </div>
-                      <p className="text-xs text-gray-500 mt-0.5">{c.visits} visits · {c.preferences.join(', ')} · {c.occasions[0]}</p>
-                      <div className="flex items-center space-x-1.5 mt-1">
-                        {[
-                          { icon: '💬', on: c.channels.whatsapp },
-                          { icon: '📱', on: c.channels.sms },
-                          { icon: '📧', on: c.channels.email },
-                          { icon: '📸', on: c.channels.instagram },
-                        ].map((ch, j) => (
-                          <span key={j} className={`text-xs ${ch.on ? 'opacity-100' : 'opacity-25'}`}>{ch.icon}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex space-x-2 flex-shrink-0">
-                      <button onClick={() => openCustomer(c)} className="text-xs border border-blue-600 text-blue-600 px-2.5 py-1 rounded-lg hover:bg-blue-50">Profile</button>
-                      <button onClick={() => openCustomer(c, 'assist')} className="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-lg hover:bg-blue-700">Assist</button>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                <span className="text-sm font-semibold text-blue-600">3 in store now</span>
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 text-center">
-              <p className="text-sm text-gray-700 mb-3">From here, the retailer can take any action on the customer:</p>
-              <div className="flex items-center justify-center space-x-3 flex-wrap gap-y-2">
-                <button onClick={() => openCustomer(mockCustomers[0])} className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">👤 View Full Profile</button>
-                <button onClick={() => openCustomer(mockCustomers[0], 'assist')} className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">🛍️ Start In-Store Assist</button>
-                <button onClick={() => openCustomer(mockCustomers[0], 'billing')} className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">🧾 Bill Customer</button>
-                <button onClick={() => openOutreach(mockCustomers[0])} className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">📡 Reach Out (5 channels)</button>
-              </div>
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+              {mockCustomers.map((c, i) => {
+                const isExpanded = expandedCard === c.id
+                return (
+                  <div key={c.id}
+                    className={`border-2 rounded-2xl overflow-hidden transition-all cursor-pointer ${isExpanded ? 'border-blue-600 shadow-lg md:col-span-3' : 'border-gray-200 hover:border-blue-300'}`}
+                    onClick={() => setExpandedCard(isExpanded ? null : c.id)}>
+
+                    {/* Card header — always visible */}
+                    <div className={`p-4 ${isExpanded ? 'bg-blue-600 text-white' : 'bg-white'}`}>
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${isExpanded ? 'bg-white text-blue-700' : 'bg-blue-600 text-white'}`}>{c.avatar}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 flex-wrap">
+                            <p className={`font-bold ${isExpanded ? 'text-white' : 'text-gray-900'}`}>{c.name}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isExpanded ? 'bg-white text-blue-700' : tierBadge(c.tier)}`}>{c.tier}</span>
+                            {i === 0 && <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isExpanded ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'}`}>Just checked in</span>}
+                          </div>
+                          <p className={`text-xs mt-0.5 ${isExpanded ? 'text-blue-200' : 'text-gray-500'}`}>{c.phone} · Checked in {c.checkInTime}</p>
+                        </div>
+                        <svg className={`w-5 h-5 flex-shrink-0 transition-transform ${isExpanded ? 'rotate-180 text-blue-200' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+
+                      {/* Collapsed mini-info */}
+                      {!isExpanded && (
+                        <div className="mt-3 space-y-2">
+                          <div className="flex items-center space-x-1.5">
+                            {c.preferences.map(p => <span key={p} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{p}</span>)}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-1">
+                              {[{ i: '💬', o: c.channels.whatsapp }, { i: '📱', o: c.channels.sms }, { i: '📧', o: c.channels.email }, { i: '📸', o: c.channels.instagram }].map((ch, j) => (
+                                <span key={j} className={`text-xs ${ch.o ? '' : 'opacity-20'}`}>{ch.i}</span>
+                              ))}
+                            </div>
+                            <span className="text-xs font-semibold text-blue-600">{c.points.toLocaleString()} pts</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Expanded content */}
+                    {isExpanded && (
+                      <div className="bg-white p-5" onClick={(e) => e.stopPropagation()}>
+                        <div className="grid grid-cols-4 gap-4 mb-4">
+                          <div className="bg-blue-50 rounded-xl p-3 text-center">
+                            <p className="text-2xl font-black text-blue-600">{c.points.toLocaleString()}</p>
+                            <p className="text-xs text-gray-500">Points</p>
+                          </div>
+                          <div className="bg-blue-50 rounded-xl p-3 text-center">
+                            <p className="text-2xl font-black text-blue-600">{c.visits}</p>
+                            <p className="text-xs text-gray-500">Visits</p>
+                          </div>
+                          <div className="bg-blue-50 rounded-xl p-3 text-center">
+                            <p className="text-2xl font-black text-blue-600">{c.totalSpend}</p>
+                            <p className="text-xs text-gray-500">Lifetime</p>
+                          </div>
+                          <div className="bg-blue-50 rounded-xl p-3 text-center">
+                            <p className="text-2xl font-black text-blue-600">{c.channels.whatsapp && c.channels.email && c.channels.instagram ? '5' : c.channels.email ? '4' : '3'}</p>
+                            <p className="text-xs text-gray-500">Channels</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4 mb-4">
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1.5">🛍️ Preferences</p>
+                            <div className="flex flex-wrap gap-1">{c.preferences.map(p => <span key={p} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{p}</span>)}</div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1.5">❤️ Wishlist</p>
+                            {c.wishlist.map(w => <p key={w} className="text-xs text-gray-700">• {w}</p>)}
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1.5">📅 Occasions</p>
+                            {c.occasions.map(o => <p key={o} className="text-xs text-gray-700 bg-blue-50 rounded px-2 py-0.5 mb-1">{o}</p>)}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1.5">🕐 Last Purchase</p>
+                            <p className="text-sm text-gray-900">{c.lastPurchase}</p>
+                            <p className="text-xs text-gray-400">{c.lastVisit}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1.5">📝 Staff Note</p>
+                            <p className="text-sm text-gray-700 italic">&ldquo;{c.notes}&rdquo;</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <button onClick={() => openCustomer(c)} className="flex-1 text-xs border-2 border-blue-600 text-blue-600 py-2 rounded-xl font-semibold hover:bg-blue-50">👤 Full Profile</button>
+                          <button onClick={() => openCustomer(c, 'assist')} className="flex-1 text-xs bg-blue-600 text-white py-2 rounded-xl font-semibold hover:bg-blue-700">🛍️ Assist</button>
+                          <button onClick={() => openCustomer(c, 'billing')} className="flex-1 text-xs bg-blue-600 text-white py-2 rounded-xl font-semibold hover:bg-blue-700">🧾 Bill</button>
+                          <button onClick={() => openOutreach(c)} className="flex-1 text-xs bg-blue-600 text-white py-2 rounded-xl font-semibold hover:bg-blue-700">📡 Reach Out</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
