@@ -1049,6 +1049,72 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* ── Window Shopper Recovery ── */}
+          <div className="border border-gray-200 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="font-semibold text-gray-900 text-sm">🚶 Window Shoppers Today</p>
+              <span className="text-xs text-blue-600">8 checked in · 0 purchased</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-blue-50 rounded-lg p-2 text-center">
+                <p className="text-xl font-black text-blue-700">8</p>
+                <p className="text-xs text-gray-500">Didn&apos;t Buy</p>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-2 text-center">
+                <p className="text-xl font-black text-blue-700">3</p>
+                <p className="text-xs text-gray-500">Recovery Sent</p>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-2 text-center">
+                <p className="text-xl font-black text-blue-700">1</p>
+                <p className="text-xs text-gray-500">Already Returned</p>
+              </div>
+            </div>
+
+            {/* Window shopper list */}
+            <div className="space-y-3 mb-4">
+              {[
+                { name: 'Divya Nair', avatar: 'DN', browsed: 'Silk Sarees', time: '4 hours ago', stage: 'Pending', stageColor: 'bg-gray-100 text-gray-600' },
+                { name: 'Rohan Gupta', avatar: 'RG', browsed: 'Formal Shirts', time: 'Yesterday', stage: 'Pending', stageColor: 'bg-gray-100 text-gray-600' },
+                { name: 'Sneha Joshi', avatar: 'SJ', browsed: 'Jewellery', time: '2 days ago', stage: 'Recovery Sent', stageColor: 'bg-blue-100 text-blue-700' },
+              ].map((ws, i) => (
+                <div key={i} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">{ws.avatar}</div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{ws.name}</p>
+                      <p className="text-xs text-gray-500">Browsed {ws.browsed} · {ws.time}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ws.stageColor}`}>{ws.stage}</span>
+                    {ws.stage === 'Pending' && (
+                      <button className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors">Send Recovery</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Auto-recovery sequence timeline */}
+            <div className="border-t border-gray-100 pt-3">
+              <p className="text-xs font-semibold text-gray-700 mb-2">Auto-Recovery Sequence</p>
+              <div className="flex items-center space-x-2 text-xs">
+                {[
+                  { label: '2h later', action: 'WhatsApp: Thank you for visiting!', active: true },
+                  { label: 'Day 1', action: 'Personalised offer on browsed items', active: false },
+                  { label: 'Day 3', action: 'Stock reminder + 10% off', active: false },
+                  { label: 'Day 7', action: 'Final nudge with social proof', active: false },
+                ].map((step, i) => (
+                  <div key={i} className="flex-1 text-center">
+                    <div className={`w-3 h-3 rounded-full mx-auto mb-1 ${step.active ? 'bg-blue-600' : 'bg-gray-300'}`} />
+                    <p className={`font-semibold ${step.active ? 'text-blue-700' : 'text-gray-500'}`}>{step.label}</p>
+                    <p className="text-gray-400 leading-tight">{step.action}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* ── Right sidebar ── */}
@@ -1515,6 +1581,7 @@ export default function Dashboard() {
       { id: 'western', label: 'Western', count: 287 },
       { id: 'wedding', label: '📅 Wedding', count: 64 },
       { id: 'inactive', label: 'Inactive 30d+', count: 198 },
+      { id: 'window', label: '🚶 Window Shoppers', count: 46 },
       { id: 'birthday', label: '🎂 Birthday this month', count: 23 },
       { id: 'highvalue', label: '💎 High Value (>₹50K)', count: 38 },
     ]
@@ -2043,6 +2110,38 @@ export default function Dashboard() {
               <p className="text-xs text-gray-400">{d.note}</p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* ── Window Shopper Recovery Stats ── */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">🚶 Window Shopper Recovery</h2>
+        <div className="grid grid-cols-5 gap-4">
+          <div className="text-center">
+            <p className="text-2xl font-black text-gray-900">46</p>
+            <p className="text-xs text-gray-500 mt-1">Window Shoppers</p>
+            <p className="text-xs text-gray-400">this week</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-black text-blue-600">20%</p>
+            <p className="text-xs text-gray-500 mt-1">Recovery Rate</p>
+            <p className="text-xs text-gray-400">9 recovered</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-black text-blue-600">₹22,500</p>
+            <p className="text-xs text-gray-500 mt-1">Revenue Recovered</p>
+            <p className="text-xs text-gray-400">per week</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-black text-gray-900">3.2</p>
+            <p className="text-xs text-gray-500 mt-1">Avg Recovery Time</p>
+            <p className="text-xs text-gray-400">days</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-black text-blue-600">67%</p>
+            <p className="text-xs text-gray-500 mt-1">Top Channel</p>
+            <p className="text-xs text-gray-400">WhatsApp</p>
+          </div>
         </div>
       </div>
 
