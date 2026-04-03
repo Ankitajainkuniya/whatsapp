@@ -111,6 +111,10 @@ export default function Dashboard() {
   const [replyText, setReplyText] = useState('')
   const [finaleStep, setFinaleStep] = useState(0)
   const [scanCount, setScanCount] = useState(0)
+  const [reviewOpen, setReviewOpen] = useState(false)
+  const [reviewQ, setReviewQ] = useState(0)
+  const [reviewAnswers, setReviewAnswers] = useState<string[]>([])
+  const [isSpeaking, setIsSpeaking] = useState(false)
   const [taggedItems, setTaggedItems] = useState<string[]>([])
   const [staffNote, setStaffNote] = useState('')
   const [pointsApplied, setPointsApplied] = useState(false)
@@ -2396,9 +2400,9 @@ export default function Dashboard() {
               <h2 className="text-white text-2xl font-black mb-4">Scan This QR to Experience ModenX</h2>
 
               <div className="flex items-center justify-center space-x-8">
-                {/* Real scannable QR */}
+                {/* Real scannable QR — click to launch AI reviewer */}
                 <div className="bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:scale-105 transition-transform"
-                  onClick={() => setScanCount(c => c + 1)}>
+                  onClick={() => { setScanCount(c => c + 1); setReviewQ(0); setReviewAnswers([]); setReviewOpen(true); setTimeout(() => { if (typeof window !== 'undefined' && 'speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Welcome! I am ModenX AI. Thank you for watching our demo. Let me ask you — how excited are you about transforming the offline retail experience?'); u.rate = 0.95; u.pitch = 1.0; u.lang = 'en-IN'; u.onstart = () => setIsSpeaking(true); u.onend = () => setIsSpeaking(false); window.speechSynthesis.speak(u) } }, 800) }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://modernx-whatsapp-platform.vercel.app&color=1e40af&bgcolor=ffffff"
@@ -2547,6 +2551,142 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+      {/* ── AI REVIEW EXPERIENCE ── */}
+      {reviewOpen && (() => {
+        const questions = [
+          {
+            q: 'Welcome! I am ModenX AI. Thank you for watching our demo. Let me ask you — how excited are you about transforming the offline retail experience?',
+            options: ['🔥 Very Excited', '👍 Interested', '🤔 Need More Info', '💡 Have Ideas'],
+          },
+          {
+            q: 'Great! Which feature impressed you the most today?',
+            options: ['📋 QR Check-In', '🤖 AI Staff Assist', '📡 Multi-Channel Outreach', '🚶 Window Shopper Recovery', '💬 WA Command Center', '📊 Journey Analytics'],
+          },
+          {
+            q: 'Last one. If you were a retailer, would you want ModenX in your store?',
+            options: ['🚀 Absolutely, sign me up!', '👀 Show me a pilot first', '💰 Depends on the pricing', '🤝 Let\'s discuss further'],
+          },
+        ]
+        const isComplete = reviewQ >= questions.length
+        const currentQ = questions[reviewQ] || questions[questions.length - 1]
+
+        const speak = (text: string) => {
+          if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            window.speechSynthesis.cancel()
+            const utterance = new SpeechSynthesisUtterance(text)
+            utterance.rate = 0.95
+            utterance.pitch = 1.0
+            utterance.lang = 'en-IN'
+            utterance.onstart = () => setIsSpeaking(true)
+            utterance.onend = () => setIsSpeaking(false)
+            window.speechSynthesis.speak(utterance)
+          }
+        }
+
+        const answer = (opt: string) => {
+          setReviewAnswers([...reviewAnswers, opt])
+          if (reviewQ < questions.length - 1) {
+            setReviewQ(reviewQ + 1)
+            setTimeout(() => speak(questions[reviewQ + 1].q), 400)
+          } else {
+            setReviewQ(questions.length)
+            setTimeout(() => speak('Thank you so much! Your feedback means the world to us. We cannot wait to bring ModenX to every retail store in India.'), 400)
+          }
+        }
+
+        return (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+            <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+
+              {/* Close */}
+              <button onClick={() => { setReviewOpen(false); if (typeof window !== 'undefined') window.speechSynthesis.cancel() }}
+                className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+
+              {!isComplete ? (
+                <div>
+                  {/* Avatar + speaking animation */}
+                  <div className="bg-blue-600 px-8 pt-8 pb-6 text-center">
+                    <div className="relative inline-block mb-4">
+                      <div className={`w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-xl transition-all ${isSpeaking ? 'ring-4 ring-blue-300 ring-offset-2 scale-110' : ''}`}>
+                        <span className="text-3xl">{isSpeaking ? '🗣️' : '🤖'}</span>
+                      </div>
+                      {isSpeaking && (
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex space-x-0.5">
+                          <div className="w-1 h-3 bg-blue-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <div className="w-1 h-4 bg-blue-200 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <div className="w-1 h-3 bg-blue-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          <div className="w-1 h-5 bg-blue-200 rounded-full animate-bounce" style={{ animationDelay: '100ms' }} />
+                          <div className="w-1 h-3 bg-blue-300 rounded-full animate-bounce" style={{ animationDelay: '250ms' }} />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-yellow-400 font-black italic text-sm mb-1">ModenX AI</p>
+                    <p className="text-blue-200 text-xs">Question {reviewQ + 1} of {questions.length}</p>
+                  </div>
+
+                  {/* Question bubble */}
+                  <div className="px-8 py-6">
+                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-5 relative">
+                      <div className="absolute -top-2 left-8 w-4 h-4 bg-blue-50 border-l border-t border-blue-100 rotate-45" />
+                      <p className="text-gray-800 text-sm leading-relaxed">{currentQ.q}</p>
+                      <button onClick={() => speak(currentQ.q)} className="mt-2 text-xs text-blue-600 hover:underline flex items-center space-x-1">
+                        <span>🔊</span><span>{isSpeaking ? 'Speaking...' : 'Hear this question'}</span>
+                      </button>
+                    </div>
+
+                    {/* Answer options */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {currentQ.options.map((opt) => (
+                        <button key={opt} onClick={() => answer(opt)}
+                          className="text-left text-sm px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-blue-600 hover:bg-blue-50 transition-all font-medium text-gray-700">
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Progress dots */}
+                  <div className="flex justify-center space-x-2 pb-6">
+                    {questions.map((_, i) => (
+                      <div key={i} className={`w-2 h-2 rounded-full transition-all ${i === reviewQ ? 'bg-blue-600 scale-125' : i < reviewQ ? 'bg-blue-400' : 'bg-gray-200'}`} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* ── Thank You Screen ── */
+                <div className="px-8 py-12 text-center">
+                  <div className="text-6xl mb-4">🎉</div>
+                  <h2 className="text-2xl font-black text-gray-900 mb-2">Thank You!</h2>
+                  <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">Your feedback has been captured. Here&apos;s what you said:</p>
+
+                  <div className="space-y-2 mb-6 text-left max-w-sm mx-auto">
+                    {reviewAnswers.map((a, i) => (
+                      <div key={i} className="flex items-center space-x-3 bg-blue-50 rounded-xl px-4 py-2.5">
+                        <span className="text-xs font-bold text-blue-400">Q{i + 1}</span>
+                        <span className="text-sm font-medium text-gray-800">{a}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-blue-600 rounded-2xl p-6 mb-6">
+                    <p className="text-yellow-400 font-black italic text-lg mb-1">modenX</p>
+                    <p className="text-white text-sm">The offline customer journey, reimagined.</p>
+                    <p className="text-blue-200 text-xs mt-2">Every walk-in becomes a relationship.</p>
+                  </div>
+
+                  <button onClick={() => { setReviewOpen(false); if (typeof window !== 'undefined') window.speechSynthesis.cancel() }}
+                    className="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl text-sm hover:bg-blue-700">
+                    Close
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── MANUAL CHECK-IN MODAL ── */}
       {manualCheckin && (
