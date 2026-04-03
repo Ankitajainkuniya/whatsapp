@@ -102,6 +102,10 @@ export default function Dashboard() {
   const [expandedTier, setExpandedTier] = useState<string | null>(null)
   const [manualCheckin, setManualCheckin] = useState(false)
   const [audienceFilters, setAudienceFilters] = useState<Record<string, boolean>>({ all: true })
+  const [waTab, setWaTab] = useState<'overview' | 'conversations' | 'templates' | 'analytics'>('overview')
+  const [activeChat, setActiveChat] = useState<string>('Meera Kapoor')
+  const [aiMode, setAiMode] = useState(true)
+  const [replyText, setReplyText] = useState('')
   const [taggedItems, setTaggedItems] = useState<string[]>([])
   const [staffNote, setStaffNote] = useState('')
   const [pointsApplied, setPointsApplied] = useState(false)
@@ -1581,165 +1585,349 @@ export default function Dashboard() {
     )
   }
 
-  // ── WA COMMAND CENTER ──────────────────────────────────────────────────────
+  // ── WA COMMAND CENTER (tabbed, with live chat) ─────────────────────────────
 
-  const renderWACommand = () => (
-    <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">WhatsApp Command Center</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Meta Business API Dashboard — Real-time messaging operations</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
-          <span className="text-sm font-semibold text-blue-600">Meta Verified</span>
-        </div>
-      </div>
+  const renderWACommand = () => {
+    const chatContacts = [
+      { name: 'Meera Kapoor', avatar: 'MK', lastMsg: 'Yes! Coming to billing right now 😊', time: '10:41 AM', unread: 0, status: 'replied' },
+      { name: 'Vikram Sinha', avatar: 'VS', lastMsg: 'Do you have this in size 40?', time: '11:12 AM', unread: 1, status: 'incoming' },
+      { name: 'Zara Deshpande', avatar: 'ZD', lastMsg: 'Will check it out this weekend!', time: '11:48 AM', unread: 0, status: 'replied' },
+      { name: 'Neha Kumar', avatar: 'NK', lastMsg: 'Thanks for the discount code!', time: '12:05 PM', unread: 2, status: 'incoming' },
+      { name: 'Arjun Patel', avatar: 'AP', lastMsg: 'Delivered', time: '12:30 PM', unread: 0, status: 'delivered' },
+      { name: 'Kavya Reddy', avatar: 'KR', lastMsg: 'Can I return the kurta?', time: '1:15 PM', unread: 1, status: 'incoming' },
+    ]
 
-      {/* Status banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center"><span className="text-white text-lg">💬</span></div>
+    const chatMessages: Record<string, Array<{ from: 'store' | 'customer'; text: string; time: string }>> = {
+      'Meera Kapoor': [
+        { from: 'store', text: "Hi Meera! Welcome back to MODENX. As our Gold member, enjoy 15% OFF on your purchase today. Show this at billing!", time: '10:32 AM' },
+        { from: 'customer', text: "Oh nice! I'm already in store 😄", time: '10:35 AM' },
+        { from: 'store', text: "Great! Your Chanderi Dupatta is in aisle 3. Should I have someone bring it to you?", time: '10:36 AM' },
+        { from: 'customer', text: "Yes please! That would be amazing", time: '10:38 AM' },
+        { from: 'store', text: "Done! Our staff will bring it to you. Also, we just received a new bridal collection — would you like to see it?", time: '10:39 AM' },
+        { from: 'customer', text: "Yes! Coming to billing right now 😊", time: '10:41 AM' },
+      ],
+      'Vikram Sinha': [
+        { from: 'store', text: "Hi Vikram! You have 870 reward points (₹87 off) at MODENX! Use before 30 Apr.", time: '11:05 AM' },
+        { from: 'customer', text: "Thanks! I was looking at that Slim Fit Blazer again", time: '11:08 AM' },
+        { from: 'customer', text: "Do you have this in size 40?", time: '11:12 AM' },
+      ],
+      'Neha Kumar': [
+        { from: 'store', text: "Thank you for visiting MODENX, Neha! Rate us ⭐⭐⭐⭐⭐ and earn 50 bonus points.", time: '11:50 AM' },
+        { from: 'customer', text: "Just rated 5 stars! The service was excellent", time: '12:02 PM' },
+        { from: 'customer', text: "Thanks for the discount code!", time: '12:05 PM' },
+      ],
+      'Kavya Reddy': [
+        { from: 'store', text: "Hey Kavya! We know you love Western wear. Check out our latest arrivals!", time: '1:00 PM' },
+        { from: 'customer', text: "Can I return the kurta? It doesn't fit well", time: '1:15 PM' },
+      ],
+    }
+
+    const activeMsgs = chatMessages[activeChat] || [
+      { from: 'store' as const, text: 'Message sent via template', time: '—' },
+    ]
+
+    return (
+      <div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-sm font-semibold text-gray-900">Business Account: MODENX Ensemble</p>
-            <p className="text-xs text-gray-500">Phone: +91 80123 45678 · Tier: Standard · Quality: High</p>
+            <h1 className="text-2xl font-bold text-gray-900">WhatsApp Command Center</h1>
+            <p className="text-gray-500 text-sm mt-0.5">Meta Business API — Real-time messaging operations</p>
           </div>
-        </div>
-        <span className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full font-medium">Connected</span>
-      </div>
-
-      {/* KPI row */}
-      <div className="grid grid-cols-4 gap-3 mb-5">
-        {[
-          { label: 'Messages Sent (24h)', value: '342', change: '↑ 18%' },
-          { label: 'Delivery Rate', value: '98.7%', change: '↑ 0.3%' },
-          { label: 'Read Rate', value: '87.2%', change: '↑ 2.1%' },
-          { label: 'Response Rate', value: '34.8%', change: '↑ 5.4%' },
-        ].map((k, i) => (
-          <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
-            <p className="text-xs text-gray-500">{k.label}</p>
-            <p className="text-2xl font-black text-gray-900 mt-1">{k.value}</p>
-            <p className="text-xs text-blue-600 font-medium mt-0.5">{k.change}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-        {/* Template Status */}
-        <div className="border border-gray-200 rounded-xl overflow-hidden">
-          <div className="px-5 py-3 bg-gray-50 border-b flex items-center justify-between">
-            <p className="font-semibold text-gray-900 text-sm">Message Templates</p>
-            <button className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg">+ New Template</button>
-          </div>
-          <div className="divide-y divide-gray-50">
-            {[
-              { name: 'Welcome Back Offer', status: 'Approved', category: 'MARKETING', sent: 312, quality: 'High' },
-              { name: 'Wishlist Back in Stock', status: 'Approved', category: 'UTILITY', sent: 186, quality: 'High' },
-              { name: 'Post-Visit Thank You', status: 'Approved', category: 'MARKETING', sent: 245, quality: 'Medium' },
-              { name: 'Loyalty Upgrade', status: 'Pending', category: 'MARKETING', sent: 0, quality: '—' },
-              { name: 'Flash Sale Alert', status: 'Rejected', category: 'MARKETING', sent: 0, quality: '—' },
-            ].map((t, i) => (
-              <div key={i} className="flex items-center justify-between px-5 py-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{t.name}</p>
-                  <p className="text-xs text-gray-400">{t.category} · {t.sent > 0 ? `${t.sent} sent` : 'Not sent yet'}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {t.quality !== '—' && <span className="text-xs text-gray-400">Q: {t.quality}</span>}
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${t.status === 'Approved' ? 'bg-blue-100 text-blue-700' : t.status === 'Pending' ? 'bg-gray-100 text-gray-600' : 'bg-red-50 text-red-600'}`}>{t.status}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Conversations & Limits */}
-        <div className="space-y-4">
-          <div className="border border-gray-200 rounded-xl p-4">
-            <p className="font-semibold text-gray-900 text-sm mb-3">Conversation Breakdown (24h)</p>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { type: 'Marketing', count: 187, limit: 1000, color: 'bg-blue-600' },
-                { type: 'Utility', count: 94, limit: 'Unlimited', color: 'bg-blue-500' },
-                { type: 'Service', count: 42, limit: 'Unlimited', color: 'bg-blue-400' },
-                { type: 'Authentication', count: 19, limit: 'Unlimited', color: 'bg-blue-300' },
-              ].map(c => (
-                <div key={c.type} className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-medium text-gray-700">{c.type}</p>
-                    <p className="text-sm font-black text-gray-900">{c.count}</p>
-                  </div>
-                  {typeof c.limit === 'number' ? (
-                    <>
-                      <div className="w-full bg-blue-100 rounded-full h-1.5">
-                        <div className={`${c.color} h-1.5 rounded-full`} style={{ width: `${(c.count / c.limit) * 100}%` }} />
-                      </div>
-                      <p className="text-xs text-gray-400 mt-0.5">{c.count}/{c.limit} limit</p>
-                    </>
-                  ) : (
-                    <p className="text-xs text-gray-400">{c.limit}</p>
-                  )}
-                </div>
-              ))}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1.5">
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse" />
+              <span className="text-xs font-semibold text-blue-600">Meta Verified</span>
             </div>
-          </div>
-
-          <div className="border border-gray-200 rounded-xl p-4">
-            <p className="font-semibold text-gray-900 text-sm mb-3">Account Health</p>
-            <div className="space-y-2.5">
-              {[
-                { label: 'Quality Rating', value: 'High', icon: '🟢' },
-                { label: 'Messaging Limit', value: '1K / 24h', icon: '📊' },
-                { label: 'Business Verification', value: 'Verified', icon: '✅' },
-                { label: 'Display Name', value: 'MODENX Ensemble', icon: '🏪' },
-                { label: 'Two-Factor Auth', value: 'Enabled', icon: '🔐' },
-              ].map((h, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm">{h.icon}</span>
-                    <span className="text-xs text-gray-600">{h.label}</span>
-                  </div>
-                  <span className="text-xs font-semibold text-gray-900">{h.value}</span>
-                </div>
-              ))}
-            </div>
+            <span className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full">+91 80123 45678</span>
           </div>
         </div>
-      </div>
 
-      {/* Recent conversations */}
-      <div className="border border-gray-200 rounded-xl overflow-hidden">
-        <div className="px-5 py-3 bg-gray-50 border-b"><p className="font-semibold text-gray-900 text-sm">Recent Conversations</p></div>
-        <div className="divide-y divide-gray-50">
+        {/* Tabs */}
+        <div className="flex space-x-1 border-b border-gray-200 mb-5">
           {[
-            { name: 'Meera Kapoor', msg: 'Yes! Coming to billing right now 😊', time: '10:41 AM', status: 'replied', template: 'Welcome Back' },
-            { name: 'Vikram Sinha', msg: 'Delivered', time: '11:12 AM', status: 'delivered', template: 'Points Reminder' },
-            { name: 'Zara Deshpande', msg: 'Will check it out this weekend!', time: '11:48 AM', status: 'replied', template: 'New Arrivals' },
-            { name: 'Neha Kumar', msg: 'Read', time: '12:05 PM', status: 'read', template: 'Post-Visit Thank You' },
-            { name: 'Arjun Patel', msg: 'Sent', time: '12:30 PM', status: 'sent', template: 'Welcome Back' },
-          ].map((c, i) => (
-            <div key={i} className="flex items-center space-x-4 px-5 py-3">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">{c.name.split(' ').map(n => n[0]).join('')}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2">
-                  <p className="font-medium text-gray-900 text-sm">{c.name}</p>
-                  <span className="text-xs text-gray-400">via {c.template}</span>
-                </div>
-                <p className="text-xs text-gray-500 truncate">{c.msg}</p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-xs text-gray-400">{c.time}</p>
-                <span className={`text-xs font-medium ${c.status === 'replied' ? 'text-blue-600' : c.status === 'read' ? 'text-blue-400' : c.status === 'delivered' ? 'text-blue-300' : 'text-gray-400'}`}>
-                  {c.status === 'replied' ? '↩ Replied' : c.status === 'read' ? '✓✓ Read' : c.status === 'delivered' ? '✓✓ Delivered' : '✓ Sent'}
-                </span>
-              </div>
-            </div>
+            { id: 'overview' as const, label: 'Overview' },
+            { id: 'conversations' as const, label: 'Live Conversations' },
+            { id: 'templates' as const, label: 'Templates' },
+            { id: 'analytics' as const, label: 'Analytics' },
+          ].map(t => (
+            <button key={t.id} onClick={() => setWaTab(t.id)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${waTab === t.id ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+              {t.label}
+              {t.id === 'conversations' && <span className="ml-1.5 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full">3</span>}
+            </button>
           ))}
         </div>
+
+        {/* ── TAB: Overview ── */}
+        {waTab === 'overview' && (
+          <div>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center"><span className="text-white text-lg">💬</span></div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">MODENX Ensemble</p>
+                  <p className="text-xs text-gray-500">Tier: Standard · Quality: High · Limit: 1K/24h</p>
+                </div>
+              </div>
+              <span className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full font-medium">Connected</span>
+            </div>
+            <div className="grid grid-cols-4 gap-3 mb-5">
+              {[
+                { label: 'Sent (24h)', value: '342', change: '↑ 18%' },
+                { label: 'Delivery', value: '98.7%', change: '↑ 0.3%' },
+                { label: 'Read', value: '87.2%', change: '↑ 2.1%' },
+                { label: 'Response', value: '34.8%', change: '↑ 5.4%' },
+              ].map((k, i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <p className="text-xs text-gray-500">{k.label}</p>
+                  <p className="text-2xl font-black text-gray-900 mt-1">{k.value}</p>
+                  <p className="text-xs text-blue-600 font-medium mt-0.5">{k.change}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-3">Conversations (24h)</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { type: 'Marketing', count: 187, limit: 1000, pct: 19 },
+                    { type: 'Utility', count: 94, limit: null, pct: 0 },
+                    { type: 'Service', count: 42, limit: null, pct: 0 },
+                    { type: 'Auth', count: 19, limit: null, pct: 0 },
+                  ].map(c => (
+                    <div key={c.type} className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex justify-between mb-1"><span className="text-xs font-medium text-gray-700">{c.type}</span><span className="text-sm font-black text-gray-900">{c.count}</span></div>
+                      {c.limit ? (
+                        <><div className="w-full bg-blue-100 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${c.pct}%` }} /></div><p className="text-xs text-gray-400 mt-0.5">{c.count}/{c.limit}</p></>
+                      ) : <p className="text-xs text-gray-400">Unlimited</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-3">Account Health</p>
+                <div className="space-y-2">
+                  {[
+                    { l: 'Quality Rating', v: 'High', i: '🟢' },
+                    { l: 'Messaging Limit', v: '1K / 24h', i: '📊' },
+                    { l: 'Verification', v: 'Verified', i: '✅' },
+                    { l: 'Display Name', v: 'MODENX Ensemble', i: '🏪' },
+                    { l: 'Two-Factor Auth', v: 'Enabled', i: '🔐' },
+                    { l: 'AI Auto-Reply', v: aiMode ? 'ON' : 'OFF', i: '🤖' },
+                  ].map((h, i) => (
+                    <div key={i} className="flex justify-between"><span className="text-xs text-gray-600 flex items-center space-x-1.5"><span>{h.i}</span><span>{h.l}</span></span><span className="text-xs font-semibold text-gray-900">{h.v}</span></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB: Live Conversations ── */}
+        {waTab === 'conversations' && (
+          <div className="flex border border-gray-200 rounded-xl overflow-hidden" style={{ height: '520px' }}>
+            {/* Contact list */}
+            <div className="w-72 border-r border-gray-200 flex flex-col flex-shrink-0">
+              <div className="p-3 border-b border-gray-100">
+                <input type="text" placeholder="Search conversations..." className="w-full text-xs border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400" />
+              </div>
+              <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
+                {chatContacts.map(c => (
+                  <div key={c.name} onClick={() => setActiveChat(c.name)}
+                    className={`flex items-center space-x-3 px-3 py-3 cursor-pointer transition-all ${activeChat === c.name ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
+                    <div className="relative flex-shrink-0">
+                      <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs">{c.avatar}</div>
+                      {c.unread > 0 && <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-bold">{c.unread}</span>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between">
+                        <p className="text-xs font-semibold text-gray-900 truncate">{c.name}</p>
+                        <span className="text-xs text-gray-400 flex-shrink-0">{c.time}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 truncate">{c.lastMsg}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Chat window */}
+            <div className="flex-1 flex flex-col">
+              {/* Chat header */}
+              <div className="bg-blue-600 px-4 py-3 flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-white text-blue-700 rounded-full flex items-center justify-center font-bold text-xs">{chatContacts.find(c => c.name === activeChat)?.avatar || '?'}</div>
+                  <div>
+                    <p className="text-white text-sm font-semibold">{activeChat}</p>
+                    <p className="text-blue-200 text-xs">Online · WhatsApp Business</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {/* AI / Human toggle */}
+                  <div className="flex items-center bg-blue-700 rounded-lg p-0.5">
+                    <button onClick={() => setAiMode(true)} className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all ${aiMode ? 'bg-white text-blue-700' : 'text-blue-200 hover:text-white'}`}>🤖 AI</button>
+                    <button onClick={() => setAiMode(false)} className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all ${!aiMode ? 'bg-white text-blue-700' : 'text-blue-200 hover:text-white'}`}>👤 Human</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI/Human mode banner */}
+              <div className={`px-4 py-1.5 text-xs font-medium flex items-center space-x-2 ${aiMode ? 'bg-blue-50 text-blue-700' : 'bg-gray-50 text-gray-600'}`}>
+                <span>{aiMode ? '🤖' : '👤'}</span>
+                <span>{aiMode ? 'AI Auto-Reply is ON — responses are generated automatically based on customer profile and store context' : 'Human Mode — staff replies manually. AI suggestions shown below.'}</span>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto bg-blue-50 p-4 space-y-3">
+                {activeMsgs.map((m, i) => (
+                  <div key={i} className={`flex ${m.from === 'store' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-xs rounded-xl p-3 shadow-sm ${m.from === 'store' ? 'bg-white rounded-tr-none' : 'bg-blue-600 text-white rounded-tl-none'}`}>
+                      <p className="text-xs leading-relaxed">{m.text}</p>
+                      <div className={`flex items-center justify-end space-x-1 mt-1 ${m.from === 'store' ? 'text-gray-400' : 'text-blue-200'}`}>
+                        <span className="text-xs">{m.time}</span>
+                        {m.from === 'store' && <span className="text-xs text-blue-500">✓✓</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* AI suggested reply (in human mode) */}
+                {!aiMode && chatContacts.find(c => c.name === activeChat)?.status === 'incoming' && (
+                  <div className="flex justify-end">
+                    <div className="max-w-xs bg-blue-100 border-2 border-dashed border-blue-300 rounded-xl p-3">
+                      <p className="text-xs text-blue-700 font-medium mb-1">💡 AI Suggestion:</p>
+                      <p className="text-xs text-blue-800">{activeChat === 'Vikram Sinha' ? "Yes Vikram! The Slim Fit Blazer is available in size 40. I'll keep one aside at the trial room for you. 👔" : activeChat === 'Kavya Reddy' ? "Hi Kavya, absolutely! You can return it within 7 days. Please bring the receipt and original tags. We're open till 9 PM today. 😊" : "Thanks for reaching out! Let me check and get back to you right away."}</p>
+                      <button onClick={() => setReplyText(activeChat === 'Vikram Sinha' ? "Yes Vikram! The Slim Fit Blazer is available in size 40. I'll keep one aside for you. 👔" : "Hi! Let me check and get back to you.")}
+                        className="mt-2 text-xs bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700">Use this reply</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Reply input */}
+              <div className="bg-white border-t border-gray-200 p-3 flex items-center space-x-2 flex-shrink-0">
+                <input type="text" placeholder={aiMode ? "AI will auto-reply... or type to override" : "Type a reply..."} value={replyText} onChange={e => setReplyText(e.target.value)}
+                  className="flex-1 text-sm border border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:border-blue-400" />
+                <button className="text-xs bg-blue-600 text-white px-3 py-2 rounded-xl hover:bg-blue-700 flex items-center space-x-1">
+                  <span>📤</span><span>Send</span>
+                </button>
+                <button className="text-xs border border-gray-200 text-gray-500 px-3 py-2 rounded-xl hover:bg-gray-50 flex items-center space-x-1">
+                  <span>📎</span><span>Template</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB: Templates ── */}
+        {waTab === 'templates' && (
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-sm text-gray-500">Manage your Meta-approved message templates</p>
+              <button className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">+ Create Template</button>
+            </div>
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <div className="grid grid-cols-12 bg-blue-600 text-white text-xs font-medium px-5 py-3">
+                <div className="col-span-3">Template Name</div>
+                <div className="col-span-2">Category</div>
+                <div className="col-span-1">Status</div>
+                <div className="col-span-1">Quality</div>
+                <div className="col-span-1">Sent</div>
+                <div className="col-span-1">Read %</div>
+                <div className="col-span-1">Reply %</div>
+                <div className="col-span-2">Actions</div>
+              </div>
+              {[
+                { name: 'Welcome Back Offer', cat: 'MARKETING', status: 'Approved', quality: 'High', sent: 312, read: 89, reply: 41 },
+                { name: 'Wishlist Back in Stock', cat: 'UTILITY', status: 'Approved', quality: 'High', sent: 186, read: 92, reply: 38 },
+                { name: 'Post-Visit Thank You', cat: 'MARKETING', status: 'Approved', quality: 'Medium', sent: 245, read: 78, reply: 22 },
+                { name: 'Points Reminder', cat: 'UTILITY', status: 'Approved', quality: 'High', sent: 134, read: 85, reply: 31 },
+                { name: 'New Arrivals Drop', cat: 'MARKETING', status: 'Approved', quality: 'High', sent: 98, read: 91, reply: 45 },
+                { name: 'Loyalty Upgrade', cat: 'MARKETING', status: 'Pending', quality: '—', sent: 0, read: 0, reply: 0 },
+                { name: 'Flash Sale Alert', cat: 'MARKETING', status: 'Rejected', quality: '—', sent: 0, read: 0, reply: 0 },
+              ].map((t, i) => (
+                <div key={i} className="grid grid-cols-12 text-xs px-5 py-3 border-t border-gray-100 hover:bg-blue-50 items-center">
+                  <div className="col-span-3 font-medium text-gray-900">{t.name}</div>
+                  <div className="col-span-2"><span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{t.cat}</span></div>
+                  <div className="col-span-1"><span className={`px-1.5 py-0.5 rounded font-medium ${t.status === 'Approved' ? 'bg-blue-100 text-blue-700' : t.status === 'Pending' ? 'bg-gray-100 text-gray-600' : 'bg-red-50 text-red-600'}`}>{t.status}</span></div>
+                  <div className="col-span-1 text-gray-600">{t.quality}</div>
+                  <div className="col-span-1 font-semibold text-gray-900">{t.sent || '—'}</div>
+                  <div className="col-span-1 text-gray-600">{t.read ? `${t.read}%` : '—'}</div>
+                  <div className="col-span-1 text-gray-600">{t.reply ? `${t.reply}%` : '—'}</div>
+                  <div className="col-span-2 flex space-x-1">
+                    {t.status === 'Approved' && <button className="text-xs border border-blue-600 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-50">Send</button>}
+                    <button className="text-xs border border-gray-200 text-gray-500 px-2 py-0.5 rounded hover:bg-gray-50">Edit</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB: Analytics ── */}
+        {waTab === 'analytics' && (
+          <div>
+            <div className="grid grid-cols-4 gap-3 mb-5">
+              {[
+                { label: 'Total Sent (30d)', value: '2,847' },
+                { label: 'Avg Delivery Rate', value: '98.7%' },
+                { label: 'Avg Read Rate', value: '87.2%' },
+                { label: 'Revenue Attributed', value: '₹5.8L' },
+              ].map((k, i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <p className="text-xs text-gray-500">{k.label}</p>
+                  <p className="text-2xl font-black text-gray-900 mt-1">{k.value}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-3">Template Performance</p>
+                {[
+                  { name: 'Welcome Back Offer', sent: 312, cvr: 41, rev: '₹2.4L' },
+                  { name: 'Wishlist Alert', sent: 186, cvr: 38, rev: '₹1.6L' },
+                  { name: 'New Arrivals', sent: 98, cvr: 45, rev: '₹0.9L' },
+                  { name: 'Thank You', sent: 245, cvr: 22, rev: '₹0.6L' },
+                  { name: 'Points Reminder', sent: 134, cvr: 31, rev: '₹0.3L' },
+                ].map(t => (
+                  <div key={t.name} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    <div>
+                      <p className="text-xs font-medium text-gray-900">{t.name}</p>
+                      <p className="text-xs text-gray-400">{t.sent} sent · {t.cvr}% CVR</p>
+                    </div>
+                    <p className="text-sm font-black text-blue-600">{t.rev}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="border border-gray-200 rounded-xl p-4">
+                <p className="font-semibold text-gray-900 text-sm mb-3">Response Insights</p>
+                <div className="space-y-3">
+                  <div className="bg-blue-50 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-gray-700">Avg Response Time</p>
+                    <p className="text-xl font-black text-blue-600">4.2 min</p>
+                    <p className="text-xs text-gray-400">AI auto-reply: 0.3s avg</p>
+                  </div>
+                  <div className="bg-blue-50 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-gray-700">AI vs Human Replies</p>
+                    <div className="flex items-center space-x-3 mt-1">
+                      <div className="flex-1"><div className="w-full bg-blue-100 rounded-full h-3"><div className="bg-blue-600 h-3 rounded-full" style={{ width: '68%' }} /></div></div>
+                      <span className="text-xs font-semibold text-gray-700">68% AI · 32% Human</span>
+                    </div>
+                  </div>
+                  <div className="bg-blue-50 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-gray-700">Customer Satisfaction</p>
+                    <p className="text-xl font-black text-blue-600">4.7 / 5.0</p>
+                    <p className="text-xs text-gray-400">Based on post-chat ratings</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  )
+    )
+  }
 
   // ── INSIGHTS ──────────────────────────────────────────────────────────────
 
