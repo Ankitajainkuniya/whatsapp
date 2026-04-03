@@ -2405,7 +2405,7 @@ export default function Dashboard() {
                   onClick={() => { setScanCount(c => c + 1); setReviewQ(0); setReviewAnswers([]); setReviewOpen(true); setTimeout(() => { if (typeof window !== 'undefined' && 'speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Welcome! I am ModenX AI. Thank you for watching our demo. Let me ask you — how excited are you about transforming the offline retail experience?'); u.rate = 0.95; u.pitch = 1.0; u.lang = 'en-IN'; u.onstart = () => setIsSpeaking(true); u.onend = () => setIsSpeaking(false); window.speechSynthesis.speak(u) } }, 800) }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://modernx-whatsapp-platform.vercel.app&color=1e40af&bgcolor=ffffff"
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://modernx-whatsapp-platform.vercel.app/review&color=1e40af&bgcolor=ffffff"
                     alt="Scan to experience ModenX"
                     width={160}
                     height={160}
