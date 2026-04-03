@@ -97,6 +97,8 @@ export default function Dashboard() {
   const [checkinStep, setCheckinStep] = useState<1 | 2 | 3 | 4>(1)
   const [repeatStep, setRepeatStep] = useState<1 | 2 | 3 | 4>(1)
   const [expandedCard, setExpandedCard] = useState<string | null>('C001')
+  const [expandedChannel, setExpandedChannel] = useState<string | null>(null)
+  const [expandedTier, setExpandedTier] = useState<string | null>(null)
   const [taggedItems, setTaggedItems] = useState<string[]>([])
   const [staffNote, setStaffNote] = useState('')
   const [pointsApplied, setPointsApplied] = useState(false)
@@ -1619,87 +1621,198 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Channel Performance + Loyalty side by side ── */}
+      {/* ── Channel Performance + Loyalty — Pie Charts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-        {/* Channel Performance */}
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Outreach Channel Performance</h2>
-          <div className="space-y-2">
-            {[
-              { ch: '💬 WhatsApp', sent: 847, cvr: 41, rev: '₹5.8L', bar: 100 },
-              { ch: '📧 Email', sent: 534, cvr: 18, rev: '₹2.1L', bar: 36 },
-              { ch: '📱 SMS', sent: 312, cvr: 28, rev: '₹1.9L', bar: 33 },
-              { ch: '📸 Instagram DM', sent: 186, cvr: 32, rev: '₹1.7L', bar: 29 },
-              { ch: '💎 RCS', sent: 94, cvr: 22, rev: '₹0.6L', bar: 10 },
-            ].map((c) => (
-              <div key={c.ch} className="bg-white border border-gray-200 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <p className="text-sm font-semibold text-gray-900">{c.ch}</p>
-                    <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">{c.cvr}% CVR</span>
-                  </div>
-                  <p className="text-xl font-black text-blue-600">{c.rev}</p>
-                </div>
-                <div className="w-full bg-blue-50 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${c.bar}%` }} />
-                </div>
-                <p className="text-xs text-gray-400 mt-1">{c.sent} sent this month</p>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Loyalty + Rewards Impact */}
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Loyalty &amp; Rewards Impact</h2>
+        {/* ── Channel Revenue Pie ── */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Outreach Revenue Split</h2>
+          {(() => {
+            const channels = [
+              { id: 'wa', ch: '💬 WhatsApp', sent: 847, cvr: 41, rev: 5.8, revLabel: '₹5.8L', pct: 48, color: '#1e40af', delivery: '98.7%', open: '87%', topTemplate: 'Welcome Back Offer' },
+              { id: 'email', ch: '📧 Email', sent: 534, cvr: 18, rev: 2.1, revLabel: '₹2.1L', pct: 17, color: '#2563eb', delivery: '97.3%', open: '34%', topTemplate: 'Monthly Lookbook' },
+              { id: 'sms', ch: '📱 SMS', sent: 312, cvr: 28, rev: 1.9, revLabel: '₹1.9L', pct: 16, color: '#3b82f6', delivery: '99.1%', open: '62%', topTemplate: 'Points Reminder' },
+              { id: 'ig', ch: '📸 Instagram', sent: 186, cvr: 32, rev: 1.7, revLabel: '₹1.7L', pct: 14, color: '#60a5fa', delivery: '96.5%', open: '71%', topTemplate: 'New Arrivals Drop' },
+              { id: 'rcs', ch: '💎 RCS', sent: 94, cvr: 22, rev: 0.6, revLabel: '₹0.6L', pct: 5, color: '#93c5fd', delivery: '95.8%', open: '58%', topTemplate: 'Loyalty Upgrade' },
+            ]
+            // Build conic gradient
+            let cumulative = 0
+            const segments = channels.map(c => {
+              const start = cumulative
+              cumulative += c.pct
+              return `${c.color} ${start}% ${cumulative}%`
+            })
+            const conicGradient = `conic-gradient(${segments.join(', ')})`
 
-          {/* Tier cards */}
-          <div className="space-y-2 mb-3">
-            {[
-              { tier: 'Platinum', count: 12, customers: '6%', avg: '₹1.2L', ltv: '₹14.4L', color: 'border-l-blue-800' },
-              { tier: 'Gold', count: 48, customers: '22%', avg: '₹38K', ltv: '₹18.2L', color: 'border-l-blue-600' },
-              { tier: 'Silver', count: 154, customers: '72%', avg: '₹12K', ltv: '₹18.5L', color: 'border-l-blue-300' },
-            ].map(t => (
-              <div key={t.tier} className={`bg-white border border-gray-200 border-l-4 ${t.color} rounded-xl p-4`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${tierBadge(t.tier)}`}>{t.tier}</span>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">{t.count} customers <span className="text-gray-400 font-normal">({t.customers})</span></p>
-                      <p className="text-xs text-gray-500">{t.avg} avg spend per customer</p>
+            return (
+              <div>
+                <div className="flex items-start space-x-6">
+                  {/* Donut */}
+                  <div className="relative flex-shrink-0">
+                    <div className="w-40 h-40 rounded-full" style={{ background: conicGradient }} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-24 h-24 bg-white rounded-full flex flex-col items-center justify-center">
+                        <p className="text-xl font-black text-gray-900">₹12.1L</p>
+                        <p className="text-xs text-gray-400">Total</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-black text-gray-900">{t.ltv}</p>
-                    <p className="text-xs text-gray-400">total LTV</p>
+                  {/* Legend */}
+                  <div className="flex-1 space-y-1.5">
+                    {channels.map(c => (
+                      <div key={c.id} className={`flex items-center space-x-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all ${expandedChannel === c.id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'}`}
+                        onClick={() => setExpandedChannel(expandedChannel === c.id ? null : c.id)}>
+                        <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: c.color }} />
+                        <p className="text-xs font-medium text-gray-700 flex-1">{c.ch}</p>
+                        <p className="text-xs font-bold text-gray-900">{c.revLabel}</p>
+                        <p className="text-xs text-gray-400">{c.pct}%</p>
+                        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${expandedChannel === c.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </div>
+                    ))}
                   </div>
                 </div>
+                {/* Expanded detail */}
+                {expandedChannel && (() => {
+                  const c = channels.find(x => x.id === expandedChannel)!
+                  return (
+                    <div className="mt-4 bg-blue-50 border border-blue-100 rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 rounded" style={{ backgroundColor: c.color }} />
+                          <p className="font-bold text-gray-900">{c.ch}</p>
+                        </div>
+                        <p className="text-2xl font-black text-blue-600">{c.revLabel}</p>
+                      </div>
+                      <div className="grid grid-cols-4 gap-3">
+                        <div className="bg-white rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-black text-gray-900">{c.sent}</p>
+                          <p className="text-xs text-gray-500">Sent</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-black text-gray-900">{c.delivery}</p>
+                          <p className="text-xs text-gray-500">Delivery</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-black text-gray-900">{c.open}</p>
+                          <p className="text-xs text-gray-500">Open Rate</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-black text-blue-600">{c.cvr}%</p>
+                          <p className="text-xs text-gray-500">CVR</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">Top template: <span className="font-semibold text-gray-700">{c.topTemplate}</span></p>
+                    </div>
+                  )
+                })()}
               </div>
-            ))}
-          </div>
+            )
+          })()}
+        </div>
 
-          {/* Rewards stats */}
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            <div className="bg-white border border-gray-200 rounded-xl p-3">
-              <p className="text-xs text-gray-500">Points Issued (30d)</p>
-              <p className="text-xl font-black text-gray-900">48,200</p>
-              <p className="text-xs text-blue-600 font-medium">↑ 14% vs prior month</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-3">
-              <p className="text-xs text-gray-500">Points Redeemed (30d)</p>
-              <p className="text-xl font-black text-gray-900">12,400</p>
-              <p className="text-xs text-gray-400">25.7% redemption rate</p>
-            </div>
-          </div>
+        {/* ── Loyalty Tier Pie ── */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Loyalty Tier Split</h2>
+          {(() => {
+            const tiers = [
+              { id: 'plat', tier: 'Platinum', count: 12, pct: 6, avg: '₹1.2L', ltv: '₹14.4L', color: '#1e3a8a', retention: '94%', avgVisits: '11.2', topPref: 'Ethnic Wear', redeemRate: '42%' },
+              { id: 'gold', tier: 'Gold', count: 48, pct: 22, avg: '₹38K', ltv: '₹18.2L', color: '#2563eb', retention: '78%', avgVisits: '6.4', topPref: 'Western', redeemRate: '31%' },
+              { id: 'silver', tier: 'Silver', count: 154, pct: 72, avg: '₹12K', ltv: '₹18.5L', color: '#93c5fd', retention: '52%', avgVisits: '2.8', topPref: 'Accessories', redeemRate: '18%' },
+            ]
+            let cumulative = 0
+            const segments = tiers.map(t => {
+              const start = cumulative
+              cumulative += t.pct
+              return `${t.color} ${start}% ${cumulative}%`
+            })
+            const conicGradient = `conic-gradient(${segments.join(', ')})`
 
-          {/* Total LTV */}
-          <div className="bg-blue-600 rounded-xl p-4 flex items-center justify-between">
-            <div>
-              <p className="text-blue-200 text-xs">Total Customer Lifetime Value</p>
-              <p className="text-blue-100 text-xs mt-0.5">214 active customers · all tiers</p>
-            </div>
-            <p className="text-3xl font-black text-white">₹51.1L</p>
-          </div>
+            return (
+              <div>
+                <div className="flex items-start space-x-6">
+                  {/* Donut */}
+                  <div className="relative flex-shrink-0">
+                    <div className="w-40 h-40 rounded-full" style={{ background: conicGradient }} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-24 h-24 bg-white rounded-full flex flex-col items-center justify-center">
+                        <p className="text-xl font-black text-gray-900">214</p>
+                        <p className="text-xs text-gray-400">Customers</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Legend */}
+                  <div className="flex-1 space-y-1.5">
+                    {tiers.map(t => (
+                      <div key={t.id} className={`flex items-center space-x-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all ${expandedTier === t.id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'}`}
+                        onClick={() => setExpandedTier(expandedTier === t.id ? null : t.id)}>
+                        <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: t.color }} />
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${tierBadge(t.tier)}`}>{t.tier}</span>
+                        <p className="text-xs text-gray-700 flex-1">{t.count} ({t.pct}%)</p>
+                        <p className="text-xs font-bold text-gray-900">{t.ltv}</p>
+                        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${expandedTier === t.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Expanded tier detail */}
+                {expandedTier && (() => {
+                  const t = tiers.find(x => x.id === expandedTier)!
+                  return (
+                    <div className="mt-4 bg-blue-50 border border-blue-100 rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 rounded" style={{ backgroundColor: t.color }} />
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${tierBadge(t.tier)}`}>{t.tier}</span>
+                          <p className="font-bold text-gray-900">{t.count} customers</p>
+                        </div>
+                        <p className="text-2xl font-black text-blue-600">{t.ltv}</p>
+                      </div>
+                      <div className="grid grid-cols-4 gap-3">
+                        <div className="bg-white rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-black text-gray-900">{t.avg}</p>
+                          <p className="text-xs text-gray-500">Avg Spend</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-black text-gray-900">{t.retention}</p>
+                          <p className="text-xs text-gray-500">Retention</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-black text-gray-900">{t.avgVisits}</p>
+                          <p className="text-xs text-gray-500">Avg Visits</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-black text-blue-600">{t.redeemRate}</p>
+                          <p className="text-xs text-gray-500">Redeem Rate</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">Top preference: <span className="font-semibold text-gray-700">{t.topPref}</span></p>
+                    </div>
+                  )
+                })()}
+
+                {/* Points + LTV footer */}
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <p className="text-xs text-gray-500">Points Issued (30d)</p>
+                    <p className="text-lg font-black text-gray-900">48,200</p>
+                    <p className="text-xs text-blue-600 font-medium">↑ 14%</p>
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <p className="text-xs text-gray-500">Points Redeemed</p>
+                    <p className="text-lg font-black text-gray-900">12,400</p>
+                    <p className="text-xs text-gray-400">25.7% rate</p>
+                  </div>
+                </div>
+                <div className="bg-blue-600 rounded-xl p-4 mt-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-200 text-xs">Total Customer Lifetime Value</p>
+                    <p className="text-blue-100 text-xs mt-0.5">214 customers · all tiers</p>
+                  </div>
+                  <p className="text-3xl font-black text-white">₹51.1L</p>
+                </div>
+              </div>
+            )
+          })()}
         </div>
       </div>
     </div>
