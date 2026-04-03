@@ -71,12 +71,13 @@ const suggestedItems = [
 
 // ─── NAV ────────────────────────────────────────────────────────────────────
 
-type View = 'checkin-flow' | 'repeat-flow' | 'dashboard' | 'customer-detail' | 'rewards' | 'outreach' | 'wa-command' | 'insights' | 'demo-finale'
+type View = 'checkin-flow' | 'repeat-flow' | 'dashboard' | 'customer-detail' | 'catalog' | 'rewards' | 'outreach' | 'wa-command' | 'insights' | 'demo-finale'
 
 const NAV = [
   { label: 'New Customer', icon: 'M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H9V11M15,11H17V13H15V11M19,11H21V13H19V11M1,21H23L12,10L1,21Z', view: 'checkin-flow' as View },
   { label: 'Repeat Customer', icon: 'M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z', view: 'repeat-flow' as View },
   { label: 'Dashboard', icon: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z', view: 'dashboard' as View },
+  { label: 'Product Catalog', icon: 'M19,6H17V5A3,3 0 0,0 14,2H10A3,3 0 0,0 7,5V6H5A1,1 0 0,0 4,7V20A1,1 0 0,0 5,21H19A1,1 0 0,0 20,20V7A1,1 0 0,0 19,6M9,5A1,1 0 0,1 10,4H14A1,1 0 0,1 15,5V6H9V5M18,19H6V8H18V19Z', view: 'catalog' as View },
   { label: 'Rewards', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z', view: 'rewards' as View },
   { label: 'Outreach', icon: 'M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z', view: 'outreach' as View },
   { label: 'WA Command Center', icon: 'M17.472,14.382c-0.297,0.297-0.626,0.569-0.987,0.816c-1.158,0.795-2.517,1.219-3.935,1.227c-1.415,0.008-2.86-0.396-4.115-1.146l-3.77,0.988l1.009-3.678c-0.764-1.264-1.148-2.696-1.117-4.135c0.031-1.438,0.466-2.852,1.264-4.098c0.797-1.246,1.933-2.31,3.292-3.088c1.359-0.778,2.905-1.152,4.477-1.084c1.572,0.068,3.08,0.578,4.366,1.477c1.286,0.899,2.315,2.158,2.983,3.647c0.668,1.489,0.859,3.146,0.552,4.801C19.177,12.106,18.557,13.294,17.472,14.382z', view: 'wa-command' as View },
@@ -109,6 +110,8 @@ export default function Dashboard() {
   const [activeChat, setActiveChat] = useState<string>('Meera Kapoor')
   const [aiMode, setAiMode] = useState(true)
   const [replyText, setReplyText] = useState('')
+  const [catalogView, setCatalogView] = useState<'grid' | 'flow'>('grid')
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
   const [finaleStep, setFinaleStep] = useState(0)
   const [scanCount, setScanCount] = useState(0)
   const [reviewOpen, setReviewOpen] = useState(false)
@@ -1489,6 +1492,193 @@ export default function Dashboard() {
     )
   }
 
+  // ── PRODUCT CATALOG ────────────────────────────────────────────────────────
+
+  const renderCatalog = () => {
+    const products = [
+      { id: 'P001', name: 'Chanderi Silk Kurta', category: 'Ethnic Wear', price: 2800, stock: 12, sold: 34, img: '👗', matched: 18, wishlisted: 5, outreachSent: 8 },
+      { id: 'P002', name: 'Kundan Jhumka Set', category: 'Jewellery', price: 1400, stock: 8, sold: 52, img: '💎', matched: 24, wishlisted: 11, outreachSent: 14 },
+      { id: 'P003', name: 'Banarasi Silk Saree', category: 'Ethnic Wear', price: 4200, stock: 4, sold: 28, img: '🥻', matched: 12, wishlisted: 7, outreachSent: 6 },
+      { id: 'P004', name: 'Slim Fit Blazer', category: 'Formals', price: 3800, stock: 6, sold: 19, img: '🧥', matched: 9, wishlisted: 3, outreachSent: 4 },
+      { id: 'P005', name: 'Bandhani Dupatta', category: 'Ethnic Wear', price: 950, stock: 22, sold: 67, img: '🧣', matched: 31, wishlisted: 8, outreachSent: 12 },
+      { id: 'P006', name: 'Embroidered Potli Bag', category: 'Accessories', price: 1200, stock: 15, sold: 41, img: '👜', matched: 14, wishlisted: 4, outreachSent: 7 },
+      { id: 'P007', name: 'Indo-Western Co-ord Set', category: 'Western', price: 5600, stock: 3, sold: 14, img: '👚', matched: 21, wishlisted: 9, outreachSent: 11 },
+      { id: 'P008', name: 'Oxford Formal Shoes', category: 'Footwear', price: 2400, stock: 0, sold: 23, img: '👞', matched: 7, wishlisted: 6, outreachSent: 0 },
+    ]
+
+    const sp = products.find(p => p.id === selectedProduct)
+
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Product Catalog</h1>
+            <p className="text-gray-500 text-sm mt-0.5">Your inventory powers every feature — assist, outreach, billing, and recovery.</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="flex bg-gray-100 rounded-lg p-0.5">
+              <button onClick={() => setCatalogView('grid')} className={`text-xs px-3 py-1.5 rounded-md font-medium ${catalogView === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>Products</button>
+              <button onClick={() => setCatalogView('flow')} className={`text-xs px-3 py-1.5 rounded-md font-medium ${catalogView === 'flow' ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>How It Connects</button>
+            </div>
+            <button className="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">+ Add Product</button>
+          </div>
+        </div>
+
+        {catalogView === 'flow' ? (
+          /* ── How Catalog Connects to Everything ── */
+          <div>
+            {/* Flow diagram */}
+            <div className="bg-blue-600 rounded-2xl p-6 mb-6 text-white text-center">
+              <p className="text-blue-200 text-xs uppercase tracking-wider mb-3">Product Catalog is the backbone of ModenX</p>
+              <div className="flex items-center justify-center space-x-3 flex-wrap gap-y-3">
+                {[
+                  { step: 'Retailer adds product', icon: '📦' },
+                  { step: 'AI matches to customers', icon: '🤖' },
+                  { step: 'Staff sees suggestions', icon: '🛍️' },
+                  { step: 'Customer buys', icon: '🧾' },
+                  { step: 'Post-visit outreach', icon: '📡' },
+                ].map((s, i) => (
+                  <div key={i} className="flex items-center">
+                    <div className="bg-white/10 rounded-xl px-4 py-3 text-center">
+                      <p className="text-2xl mb-1">{s.icon}</p>
+                      <p className="text-xs font-medium">{s.step}</p>
+                    </div>
+                    {i < 4 && <svg className="w-5 h-5 text-blue-300 mx-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Feature connections */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { feature: 'Check-In Welcome', icon: '📋', desc: 'When a customer checks in, we match their preferences to catalog items and show "Your wishlist items are in stock!" on the welcome screen.', example: '"Chanderi Dupatta is available!" shown to Meera' },
+                { feature: 'In-Store Assist', icon: '🛍️', desc: 'AI reads the customer profile + catalog to suggest items. Stock levels, price, and category matching happen in real time.', example: 'Suggested: Kundan Jhumka (on wishlist) + Potli Bag (occasion: Wedding)' },
+                { feature: 'Billing', icon: '🧾', desc: 'Items added from catalog to the bill. Price, SKU, and stock auto-deduct on purchase. Reward points calculated from catalog price.', example: '₹2,800 Chanderi Kurta → 140 pts earned (5% rate)' },
+                { feature: 'Outreach Campaigns', icon: '📡', desc: 'Send "back in stock", "price drop", and "new arrival" messages — all pulled from catalog data automatically.', example: '"Oxford Shoes back in stock!" sent to 6 customers who wishlisted it' },
+                { feature: 'Window Shopper Recovery', icon: '🚶', desc: 'When someone browses but doesn&apos;t buy, we know WHAT they browsed (from staff tags) and send targeted recovery with the actual product.', example: '"The Silk Saree you loved is still here — now 10% off"' },
+                { feature: 'WhatsApp Rich Cards', icon: '💬', desc: 'Products from catalog become rich WhatsApp media cards with image, price, and a "Buy Now" CTA — far higher engagement.', example: 'Rich card: Bandhani Dupatta — ₹950 — [View] [Buy Now]' },
+              ].map((f, i) => (
+                <div key={i} className="border border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-all">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-xl">{f.icon}</span>
+                    <p className="font-semibold text-gray-900 text-sm">{f.feature}</p>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-3 leading-relaxed">{f.desc}</p>
+                  <div className="bg-blue-50 rounded-lg px-3 py-2">
+                    <p className="text-xs text-blue-700 italic">{f.example}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* ── Product Grid ── */
+          <div>
+            {/* Stats */}
+            <div className="grid grid-cols-4 gap-3 mb-5">
+              {[
+                { label: 'Total Products', value: '8', sub: '6 categories' },
+                { label: 'In Stock', value: '70', sub: 'across 7 products' },
+                { label: 'Out of Stock', value: '1', sub: 'Oxford Shoes — 6 wishlisted' },
+                { label: 'AI-Matched This Week', value: '136', sub: 'product-customer matches' },
+              ].map((s, i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-xl p-3">
+                  <p className="text-xs text-gray-500">{s.label}</p>
+                  <p className="text-xl font-black text-gray-900 mt-0.5">{s.value}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{s.sub}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Grid + Detail panel */}
+            <div className="flex space-x-5">
+              {/* Product grid */}
+              <div className={`${sp ? 'w-2/3' : 'w-full'} grid ${sp ? 'grid-cols-2' : 'grid-cols-4'} gap-3 transition-all`}>
+                {products.map(p => (
+                  <div key={p.id} onClick={() => setSelectedProduct(selectedProduct === p.id ? null : p.id)}
+                    className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${selectedProduct === p.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="text-3xl">{p.img}</span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${p.stock > 5 ? 'bg-blue-100 text-blue-700' : p.stock > 0 ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                        {p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}
+                      </span>
+                    </div>
+                    <p className="font-semibold text-gray-900 text-sm">{p.name}</p>
+                    <p className="text-xs text-gray-400">{p.category}</p>
+                    <p className="text-lg font-black text-blue-600 mt-1">₹{p.price.toLocaleString()}</p>
+                    <div className="flex items-center space-x-3 mt-2 text-xs text-gray-500">
+                      <span>{p.sold} sold</span>
+                      <span>❤️ {p.wishlisted}</span>
+                      <span>🤖 {p.matched}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Detail panel */}
+              {sp && (
+                <div className="w-1/3 border border-gray-200 rounded-xl p-5 sticky top-0 self-start">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-4xl">{sp.img}</span>
+                    <button onClick={() => setSelectedProduct(null)} className="text-gray-400 hover:text-gray-600">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900">{sp.name}</h3>
+                  <p className="text-xs text-gray-400 mb-1">{sp.category} · SKU: {sp.id}</p>
+                  <p className="text-2xl font-black text-blue-600 mb-4">₹{sp.price.toLocaleString()}</p>
+
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="bg-blue-50 rounded-lg p-2.5 text-center">
+                      <p className="text-lg font-black text-gray-900">{sp.stock}</p>
+                      <p className="text-xs text-gray-500">In Stock</p>
+                    </div>
+                    <div className="bg-blue-50 rounded-lg p-2.5 text-center">
+                      <p className="text-lg font-black text-gray-900">{sp.sold}</p>
+                      <p className="text-xs text-gray-500">Sold</p>
+                    </div>
+                  </div>
+
+                  <p className="font-semibold text-gray-900 text-sm mb-2">Platform Connections</p>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
+                      <span className="text-gray-600">🤖 AI-Matched to</span>
+                      <span className="font-semibold text-blue-600">{sp.matched} customers</span>
+                    </div>
+                    <div className="flex justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
+                      <span className="text-gray-600">❤️ On wishlists</span>
+                      <span className="font-semibold text-blue-600">{sp.wishlisted} customers</span>
+                    </div>
+                    <div className="flex justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
+                      <span className="text-gray-600">📡 Outreach sent for this</span>
+                      <span className="font-semibold text-blue-600">{sp.outreachSent} messages</span>
+                    </div>
+                    {sp.stock === 0 && (
+                      <div className="flex justify-between text-xs bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                        <span className="text-blue-700">🔔 Restock alert</span>
+                        <span className="font-semibold text-blue-700">{sp.wishlisted} waiting</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <button className="w-full text-xs bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700">
+                      📡 Send &ldquo;In Stock&rdquo; Alert to {sp.wishlisted} Customers
+                    </button>
+                    <button className="w-full text-xs border border-blue-600 text-blue-600 py-2 rounded-lg font-semibold hover:bg-blue-50">
+                      🛍️ Push to Staff Assist Suggestions
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   // ── REWARDS CATALOG ────────────────────────────────────────────────────────
 
   const renderRewards = () => (
@@ -2505,6 +2695,7 @@ export default function Dashboard() {
     'repeat-flow': renderRepeatFlow,
     'dashboard': renderDashboard,
     'customer-detail': renderCustomerDetail,
+    'catalog': renderCatalog,
     'rewards': renderRewards,
     'outreach': renderOutreach,
     'wa-command': renderWACommand,
