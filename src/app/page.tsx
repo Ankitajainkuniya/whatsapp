@@ -2396,26 +2396,17 @@ export default function Dashboard() {
               <h2 className="text-white text-2xl font-black mb-4">Scan This QR to Experience ModenX</h2>
 
               <div className="flex items-center justify-center space-x-8">
-                {/* Live QR */}
+                {/* Real scannable QR */}
                 <div className="bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:scale-105 transition-transform"
                   onClick={() => setScanCount(c => c + 1)}>
-                  <div className="w-40 h-40 relative flex items-center justify-center">
-                    <div className="grid grid-cols-9 gap-0.5 w-36 h-36">
-                      {Array.from({ length: 81 }).map((_, i) => {
-                        const row = Math.floor(i / 9)
-                        const col = i % 9
-                        const isCorner = (row < 3 && col < 3) || (row < 3 && col > 5) || (row > 5 && col < 3)
-                        const isRand = [4,12,18,22,28,31,36,40,45,52,58,63,68,72,76].includes(i)
-                        const isBlue = [13,14,15,21,22,23,30,31,32,48,49,50,57,58,59].includes(i)
-                        return <div key={i} className={`w-full h-full rounded-sm ${isCorner ? 'bg-blue-800' : isBlue ? 'bg-blue-600' : isRand ? 'bg-gray-800' : 'bg-white'}`} />
-                      })}
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center shadow">
-                        <span className="text-yellow-400 font-black italic text-sm">mX</span>
-                      </div>
-                    </div>
-                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://modernx-whatsapp-platform.vercel.app&color=1e40af&bgcolor=ffffff"
+                    alt="Scan to experience ModenX"
+                    width={160}
+                    height={160}
+                    className="rounded"
+                  />
                   {scanCount > 0 && (
                     <div className="mt-2 text-center">
                       <p className="text-xs font-bold text-blue-600">{scanCount} {scanCount === 1 ? 'person' : 'people'} scanned!</p>
