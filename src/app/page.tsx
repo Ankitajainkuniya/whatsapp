@@ -882,42 +882,111 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* ── Live customers (2 cols) ── */}
         <div className="lg:col-span-2 space-y-5">
-          <div className="border border-gray-200 rounded-xl overflow-hidden">
-            <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <p className="font-semibold text-gray-900 text-sm">Live Customers</p>
-              </div>
-              <div className="flex space-x-2">
-                {['Now', '12h', '24h', '1w'].map((f, i) => (
-                  <button key={f} className={`text-xs px-2.5 py-1 rounded-lg ${i === 0 ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{f}</button>
-                ))}
-              </div>
+          {/* Live Customers header */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <p className="font-semibold text-gray-900 text-sm">Live Customers</p>
             </div>
-            <div className="divide-y divide-gray-50">
-              {mockCustomers.map((c) => (
-                <div key={c.id} className="flex items-center space-x-3 px-5 py-3 hover:bg-blue-50 cursor-pointer transition-all" onClick={() => openCustomer(c)}>
-                  <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">{c.avatar}</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 flex-wrap">
-                      <p className="font-semibold text-gray-900 text-sm">{c.name}</p>
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${tierBadge(c.tier)}`}>{c.tier}</span>
-                      <span className="text-xs text-gray-400">{c.points.toLocaleString()} pts</span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-0.5 truncate">{c.preferences.join(', ')} · {c.occasions[0]}</p>
-                    <div className="flex items-center space-x-1 mt-0.5">
-                      {[{ i: '💬', o: c.channels.whatsapp }, { i: '📱', o: c.channels.sms }, { i: '📧', o: c.channels.email }, { i: '📸', o: c.channels.instagram }].map((ch, j) => (
-                        <span key={j} className={`text-xs ${ch.o ? '' : 'opacity-20'}`}>{ch.i}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1.5 flex-shrink-0">
-                    <button onClick={(e) => { e.stopPropagation(); openOutreach(c) }} className="text-xs border border-blue-600 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50">Reach Out</button>
-                    <button onClick={(e) => { e.stopPropagation(); openCustomer(c, 'assist') }} className="text-xs bg-blue-600 text-white px-2 py-1 rounded-lg hover:bg-blue-700">Assist</button>
-                  </div>
-                </div>
+            <div className="flex space-x-2">
+              {['Now', '12h', '24h', '1w'].map((f, i) => (
+                <button key={f} className={`text-xs px-2.5 py-1 rounded-lg ${i === 0 ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{f}</button>
               ))}
             </div>
+          </div>
+
+          {/* Grid of expandable cards */}
+          <div className="grid grid-cols-1 gap-3">
+            {mockCustomers.map((c) => {
+              const isOpen = expandedCard === c.id
+              return (
+                <div key={c.id} className={`border-2 rounded-xl overflow-hidden transition-all ${isOpen ? 'border-blue-600 shadow-md' : 'border-gray-200 hover:border-blue-300'}`}>
+                  {/* Collapsed row — always visible */}
+                  <div className={`flex items-center space-x-3 px-4 py-3 cursor-pointer ${isOpen ? 'bg-blue-600 text-white' : 'bg-white hover:bg-blue-50'}`}
+                    onClick={() => setExpandedCard(isOpen ? null : c.id)}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${isOpen ? 'bg-white text-blue-700' : 'bg-blue-600 text-white'}`}>{c.avatar}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 flex-wrap">
+                        <p className={`font-bold text-sm ${isOpen ? 'text-white' : 'text-gray-900'}`}>{c.name}</p>
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${isOpen ? 'bg-white text-blue-700' : tierBadge(c.tier)}`}>{c.tier}</span>
+                        <span className={`text-xs ${isOpen ? 'text-blue-200' : 'text-gray-400'}`}>{c.points.toLocaleString()} pts</span>
+                      </div>
+                      <p className={`text-xs mt-0.5 ${isOpen ? 'text-blue-200' : 'text-gray-500'}`}>{c.preferences.join(', ')} · {c.occasions[0]}</p>
+                    </div>
+                    <div className="flex items-center space-x-2 flex-shrink-0">
+                      {!isOpen && (
+                        <>
+                          <button onClick={(e) => { e.stopPropagation(); openOutreach(c) }} className="text-xs border border-blue-600 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50">Reach Out</button>
+                          <button onClick={(e) => { e.stopPropagation(); openCustomer(c, 'assist') }} className="text-xs bg-blue-600 text-white px-2 py-1 rounded-lg hover:bg-blue-700">Assist</button>
+                        </>
+                      )}
+                      <svg className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180 text-blue-200' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
+
+                  {/* Expanded details */}
+                  {isOpen && (
+                    <div className="bg-white p-4" onClick={(e) => e.stopPropagation()}>
+                      {/* Stats row */}
+                      <div className="grid grid-cols-4 gap-3 mb-4">
+                        {[
+                          { val: c.points.toLocaleString(), label: 'Points' },
+                          { val: String(c.visits), label: 'Visits' },
+                          { val: c.totalSpend, label: 'Lifetime' },
+                          { val: c.channels.instagram ? '5' : '4', label: 'Channels' },
+                        ].map((s, i) => (
+                          <div key={i} className="bg-blue-50 rounded-lg p-2.5 text-center">
+                            <p className="text-lg font-black text-blue-600">{s.val}</p>
+                            <p className="text-xs text-gray-500">{s.label}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Details grid */}
+                      <div className="grid grid-cols-4 gap-3 mb-4">
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 mb-1">🛍️ Preferences</p>
+                          <div className="flex flex-wrap gap-1">{c.preferences.map(p => <span key={p} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{p}</span>)}</div>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 mb-1">❤️ Wishlist</p>
+                          {c.wishlist.map(w => <p key={w} className="text-xs text-gray-700">• {w}</p>)}
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 mb-1">🕐 Last Purchase</p>
+                          <p className="text-xs text-gray-900 font-medium">{c.lastPurchase}</p>
+                          <p className="text-xs text-gray-400">{c.lastVisit}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 mb-1">📝 Staff Note</p>
+                          <p className="text-xs text-gray-700 italic">&ldquo;{c.notes}&rdquo;</p>
+                        </div>
+                      </div>
+
+                      {/* Channels */}
+                      <div className="flex items-center space-x-3 mb-4">
+                        {[
+                          { icon: '💬', label: 'WhatsApp', on: c.channels.whatsapp },
+                          { icon: '📱', label: 'SMS', on: c.channels.sms },
+                          { icon: '📧', label: 'Email', on: c.channels.email },
+                          { icon: '📸', label: 'Instagram', on: c.channels.instagram },
+                        ].map((ch, j) => (
+                          <span key={j} className={`text-xs px-2 py-1 rounded-full ${ch.on ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-400'}`}>{ch.icon} {ch.label}</span>
+                        ))}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center space-x-2">
+                        <button onClick={() => openCustomer(c)} className="flex-1 text-xs border-2 border-blue-600 text-blue-600 py-2 rounded-lg font-semibold hover:bg-blue-50">👤 Full Profile</button>
+                        <button onClick={() => openCustomer(c, 'assist')} className="flex-1 text-xs bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700">🛍️ Assist</button>
+                        <button onClick={() => openCustomer(c, 'billing')} className="flex-1 text-xs bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700">🧾 Bill</button>
+                        <button onClick={() => openOutreach(c)} className="flex-1 text-xs bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700">📡 Reach Out</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
 
           {/* ── Rewards + Outreach side-by-side ── */}
