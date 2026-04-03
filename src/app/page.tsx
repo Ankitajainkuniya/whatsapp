@@ -12,7 +12,8 @@ const mockCustomers = [
     visits: 7, lastVisit: '12 Mar 2026', lastPurchase: 'Banarasi Silk Saree — ₹4,200',
     preferences: ['Ethnic Wear', 'Accessories'], wishlist: ['Chanderi Dupatta', 'Kundan Earrings'],
     occasions: ['Wedding (May 2026)', 'Diwali'], tier: 'Gold', points: 2450, totalSpend: '₹38,400',
-    avatar: 'MK', notes: 'Prefers muted tones. Usually shops with her mother.',
+    avatar: 'MK', assistedBy: 'Ritu (Floor Staff)', lastAssistDate: '12 Mar 2026',
+    notes: 'Prefers muted tones. Usually shops with her mother.',
     purchases: [
       { item: 'Banarasi Silk Saree', amount: 4200, date: '12 Mar 2026' },
       { item: 'Zardozi Clutch', amount: 1800, date: '18 Jan 2026' },
@@ -26,7 +27,8 @@ const mockCustomers = [
     visits: 3, lastVisit: '01 Feb 2026', lastPurchase: 'Slim Fit Blazer — ₹3,800',
     preferences: ['Formals', 'Footwear'], wishlist: ['Oxford Shoes', 'Linen Trousers'],
     occasions: ['Office Wear', 'Engagement (Jun 2026)'], tier: 'Silver', points: 870, totalSpend: '₹11,200',
-    avatar: 'VS', notes: 'Prefers western formals. Size 40 shirt, 32 waist.',
+    avatar: 'VS', assistedBy: 'Arun (Senior Stylist)', lastAssistDate: '01 Feb 2026',
+    notes: 'Prefers western formals. Size 40 shirt, 32 waist.',
     purchases: [
       { item: 'Slim Fit Blazer', amount: 3800, date: '01 Feb 2026' },
       { item: 'White Formal Shirt', amount: 1600, date: '15 Nov 2025' },
@@ -39,7 +41,8 @@ const mockCustomers = [
     visits: 14, lastVisit: '28 Mar 2026', lastPurchase: 'Indo-Western Co-ord Set — ₹5,600',
     preferences: ['Western', 'Bags', 'Jewellery'], wishlist: ['Tote Bag', 'Block Print Kurta'],
     occasions: ['Casual', 'Birthday (Apr 2026)'], tier: 'Platinum', points: 5200, totalSpend: '₹92,000',
-    avatar: 'ZD', notes: 'Top spender. Loves discovering new arrivals. Very decisive.',
+    avatar: 'ZD', assistedBy: 'Priya (Store Manager)', lastAssistDate: '28 Mar 2026',
+    notes: 'Top spender. Loves discovering new arrivals. Very decisive.',
     purchases: [
       { item: 'Indo-Western Co-ord Set', amount: 5600, date: '28 Mar 2026' },
       { item: 'Silver Cuff Bracelet', amount: 2200, date: '10 Mar 2026' },
@@ -462,11 +465,16 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-3 gap-4 mb-4">
                           <div>
                             <p className="text-xs font-semibold text-gray-500 mb-1.5">🕐 Last Purchase</p>
                             <p className="text-sm text-gray-900">{c.lastPurchase}</p>
                             <p className="text-xs text-gray-400">{c.lastVisit}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1.5">👤 Last Assisted By</p>
+                            <p className="text-sm text-gray-900 font-medium">{c.assistedBy}</p>
+                            <p className="text-xs text-gray-400">{c.lastAssistDate}</p>
                           </div>
                           <div>
                             <p className="text-xs font-semibold text-gray-500 mb-1.5">📝 Staff Note</p>
@@ -806,8 +814,8 @@ export default function Dashboard() {
 
                   {/* Suggested greeting */}
                   <div className="bg-gray-900 text-white rounded-xl p-4">
-                    <p className="text-xs text-gray-400 mb-1">💡 SUGGESTED GREETING</p>
-                    <p className="text-sm leading-relaxed">&ldquo;Welcome back, Meera! The Chanderi Dupatta you were eyeing is in aisle 3. And since you&apos;re shopping for the wedding — we just got a new bridal collection you&apos;ll love.&rdquo;</p>
+                    <p className="text-xs text-gray-400 mb-1">💡 SUGGESTED GREETING (assign to: <span className="text-blue-400 font-semibold">{rc.assistedBy}</span>)</p>
+                    <p className="text-sm leading-relaxed">&ldquo;Welcome back, Meera! It&apos;s {rc.assistedBy.split(' ')[0]} again. The Chanderi Dupatta you were eyeing is in aisle 3. Since you&apos;re here for the wedding — we just got a new bridal collection I think you&apos;ll love.&rdquo;</p>
                   </div>
                 </div>
               </div>
@@ -975,8 +983,9 @@ export default function Dashboard() {
                           <p className="text-xs text-gray-400">{c.lastVisit}</p>
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-gray-500 mb-1">📝 Staff Note</p>
-                          <p className="text-xs text-gray-700 italic">&ldquo;{c.notes}&rdquo;</p>
+                          <p className="text-xs font-semibold text-gray-500 mb-1">👤 Last Assisted By</p>
+                          <p className="text-xs text-gray-900 font-medium">{c.assistedBy}</p>
+                          <p className="text-xs text-gray-400">{c.lastAssistDate}</p>
                         </div>
                       </div>
 
@@ -1214,6 +1223,16 @@ export default function Dashboard() {
               </div>
 
               <div className="space-y-4">
+                <div className="border border-gray-200 rounded-xl p-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-2">👤 Last Assisted By</p>
+                  <div className="flex items-center space-x-2 bg-blue-50 rounded-lg px-3 py-2">
+                    <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">{c.assistedBy.charAt(0)}</div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-900">{c.assistedBy}</p>
+                      <p className="text-xs text-gray-400">{c.lastAssistDate}</p>
+                    </div>
+                  </div>
+                </div>
                 <div className="border border-gray-200 rounded-xl p-4">
                   <p className="font-semibold text-gray-900 text-sm mb-2">📝 Staff Notes</p>
                   <p className="text-xs text-gray-600 bg-yellow-50 border border-yellow-100 rounded px-3 py-2 italic">&ldquo;{c.notes}&rdquo;</p>
