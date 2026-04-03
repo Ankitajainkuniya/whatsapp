@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 
@@ -122,6 +122,36 @@ export default function Dashboard() {
   const [outreachModal, setOutreachModal] = useState<typeof mockCustomers[0] | null>(null)
   const [outreachTemplate, setOutreachTemplate] = useState(outreachTemplates[0])
   const [outreachSent, setOutreachSent] = useState(false)
+
+  // Pre-load voices for natural speech
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.getVoices()
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices()
+    }
+  }, [])
+
+  // Auto-speak when review modal opens
+  useEffect(() => {
+    if (reviewOpen && reviewQ === 0) {
+      const timer = setTimeout(() => {
+        if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+        window.speechSynthesis.cancel()
+        const u = new SpeechSynthesisUtterance('Welcome! I am ModenX AI. Thank you for watching our demo. Let me ask you — how excited are you about transforming the offline retail experience?')
+        const voices = window.speechSynthesis.getVoices()
+        const preferred = ['Google UK English Female', 'Google US English', 'Microsoft Zira', 'Microsoft Jenny', 'Samantha', 'Karen']
+        let best = voices.find(v => preferred.some(p => v.name.includes(p)))
+        if (!best) best = voices.find(v => v.lang.startsWith('en') && !v.localService)
+        if (!best) best = voices.find(v => v.lang.startsWith('en'))
+        if (best) u.voice = best
+        u.rate = 0.92; u.pitch = 1.05; u.lang = best?.lang || 'en-US'
+        u.onstart = () => setIsSpeaking(true)
+        u.onend = () => setIsSpeaking(false)
+        window.speechSynthesis.speak(u)
+      }, 800)
+      return () => clearTimeout(timer)
+    }
+  }, [reviewOpen, reviewQ])
 
   const tierBadge = (tier: string) => {
     if (tier === 'Platinum') return 'bg-blue-800 text-white'
@@ -2402,7 +2432,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-center space-x-8">
                 {/* Real scannable QR — click to launch AI reviewer */}
                 <div className="bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:scale-105 transition-transform"
-                  onClick={() => { setScanCount(c => c + 1); setReviewQ(0); setReviewAnswers([]); setReviewOpen(true); setTimeout(() => { if (typeof window !== 'undefined' && 'speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Welcome! I am ModenX AI. Thank you for watching our demo. Let me ask you — how excited are you about transforming the offline retail experience?'); u.rate = 0.95; u.pitch = 1.0; u.lang = 'en-IN'; u.onstart = () => setIsSpeaking(true); u.onend = () => setIsSpeaking(false); window.speechSynthesis.speak(u) } }, 800) }}>
+                  onClick={() => { setScanCount(c => c + 1); setReviewQ(0); setReviewAnswers([]); setReviewOpen(true) }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://modernx-whatsapp-platform.vercel.app/review&color=1e40af&bgcolor=ffffff"
@@ -2572,16 +2602,23 @@ export default function Dashboard() {
         const currentQ = questions[reviewQ] || questions[questions.length - 1]
 
         const speak = (text: string) => {
-          if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-            window.speechSynthesis.cancel()
-            const utterance = new SpeechSynthesisUtterance(text)
-            utterance.rate = 0.95
-            utterance.pitch = 1.0
-            utterance.lang = 'en-IN'
-            utterance.onstart = () => setIsSpeaking(true)
-            utterance.onend = () => setIsSpeaking(false)
-            window.speechSynthesis.speak(utterance)
-          }
+          if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+          window.speechSynthesis.cancel()
+          const u = new SpeechSynthesisUtterance(text)
+          const voices = window.speechSynthesis.getVoices()
+          const preferred = ['Google UK English Female', 'Google US English', 'Microsoft Zira', 'Microsoft Jenny', 'Samantha', 'Karen', 'Moira', 'Rishi']
+          let best = voices.find(v => preferred.some(p => v.name.includes(p)))
+          if (!best) best = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female'))
+          if (!best) best = voices.find(v => v.lang.startsWith('en') && !v.localService)
+          if (!best) best = voices.find(v => v.lang.startsWith('en'))
+          if (best) u.voice = best
+          u.rate = 0.92
+          u.pitch = 1.05
+          u.volume = 1.0
+          u.lang = best?.lang || 'en-US'
+          u.onstart = () => setIsSpeaking(true)
+          u.onend = () => setIsSpeaking(false)
+          window.speechSynthesis.speak(u)
         }
 
         const answer = (opt: string) => {

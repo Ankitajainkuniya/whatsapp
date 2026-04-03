@@ -24,17 +24,42 @@ export default function ReviewPage() {
   const [started, setStarted] = useState(false)
 
   const speak = (text: string) => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel()
-      const u = new SpeechSynthesisUtterance(text)
-      u.rate = 0.95
-      u.pitch = 1.0
-      u.lang = 'en-IN'
-      u.onstart = () => setIsSpeaking(true)
-      u.onend = () => setIsSpeaking(false)
-      window.speechSynthesis.speak(u)
-    }
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(text)
+    // Pick the most natural voice available
+    const voices = window.speechSynthesis.getVoices()
+    const preferred = [
+      'Google UK English Female',
+      'Google US English',
+      'Microsoft Zira',
+      'Microsoft Jenny',
+      'Samantha',
+      'Karen',
+      'Moira',
+      'Rishi',
+    ]
+    let bestVoice = voices.find(v => preferred.some(p => v.name.includes(p)))
+    if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female'))
+    if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en') && !v.localService)
+    if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en'))
+    if (bestVoice) u.voice = bestVoice
+    u.rate = 0.92
+    u.pitch = 1.05
+    u.volume = 1.0
+    u.lang = bestVoice?.lang || 'en-US'
+    u.onstart = () => setIsSpeaking(true)
+    u.onend = () => setIsSpeaking(false)
+    window.speechSynthesis.speak(u)
   }
+
+  // Pre-load voices (Chrome loads them async)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.getVoices()
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices()
+    }
+  }, [])
 
   const startReview = () => {
     setStarted(true)
