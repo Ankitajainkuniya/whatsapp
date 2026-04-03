@@ -71,7 +71,7 @@ const suggestedItems = [
 
 // ─── NAV ────────────────────────────────────────────────────────────────────
 
-type View = 'checkin-flow' | 'repeat-flow' | 'dashboard' | 'customer-detail' | 'rewards' | 'outreach' | 'wa-command' | 'insights'
+type View = 'checkin-flow' | 'repeat-flow' | 'dashboard' | 'customer-detail' | 'rewards' | 'outreach' | 'wa-command' | 'insights' | 'demo-finale'
 
 const NAV = [
   { label: 'New Customer', icon: 'M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H9V11M15,11H17V13H15V11M19,11H21V13H19V11M1,21H23L12,10L1,21Z', view: 'checkin-flow' as View },
@@ -109,6 +109,8 @@ export default function Dashboard() {
   const [activeChat, setActiveChat] = useState<string>('Meera Kapoor')
   const [aiMode, setAiMode] = useState(true)
   const [replyText, setReplyText] = useState('')
+  const [finaleStep, setFinaleStep] = useState(0)
+  const [scanCount, setScanCount] = useState(0)
   const [taggedItems, setTaggedItems] = useState<string[]>([])
   const [staffNote, setStaffNote] = useState('')
   const [pointsApplied, setPointsApplied] = useState(false)
@@ -2342,6 +2344,137 @@ export default function Dashboard() {
     </div>
   )
 
+  // ── DEMO FINALE ────────────────────────────────────────────────────────────
+
+  const renderFinale = () => {
+    const stats = [
+      { label: 'Screens Demoed', value: '8', delay: 0 },
+      { label: 'Customer Journeys', value: '2', delay: 100 },
+      { label: 'Channels Unified', value: '5', delay: 200 },
+      { label: 'Revenue Recovered', value: '₹9L/yr', delay: 300 },
+      { label: 'Platform ROI', value: '41x', delay: 400 },
+    ]
+
+    if (finaleStep === 0) {
+      // Trigger the entrance animation
+      setTimeout(() => setFinaleStep(1), 100)
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
+        {/* Phase 1: Big logo reveal */}
+        <div className={`transition-all duration-1000 ${finaleStep >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
+          <div className="w-24 h-24 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+            <span className="text-yellow-400 font-black italic text-3xl">mX</span>
+          </div>
+          <h1 className="text-4xl font-black text-gray-900 mb-2">
+            Every walk-in becomes a <span className="text-blue-600">relationship.</span>
+          </h1>
+          <p className="text-gray-500 text-lg max-w-xl mx-auto mb-8">
+            From QR check-in to AI-powered assist to multi-channel follow-up — ModenX turns offline retail into a connected, data-driven experience.
+          </p>
+        </div>
+
+        {/* Phase 2: Stats fly in */}
+        <div className={`grid grid-cols-5 gap-4 mb-10 max-w-3xl w-full transition-all duration-700 delay-500 ${finaleStep >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          {stats.map((s, i) => (
+            <div key={i} className="bg-white border-2 border-blue-100 rounded-xl p-4 transition-all hover:border-blue-600 hover:shadow-lg" style={{ transitionDelay: `${s.delay + 600}ms` }}>
+              <p className="text-2xl font-black text-blue-600">{s.value}</p>
+              <p className="text-xs text-gray-500 mt-1">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Phase 3: Interactive QR — scan to experience */}
+        <div className={`transition-all duration-700 delay-1000 ${finaleStep >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="bg-blue-600 rounded-2xl p-8 max-w-lg mx-auto shadow-2xl relative overflow-hidden">
+            {/* Animated background pulse */}
+            <div className="absolute inset-0 bg-blue-500 rounded-2xl animate-pulse opacity-20" />
+
+            <div className="relative">
+              <p className="text-blue-200 text-sm font-medium uppercase tracking-wider mb-2">Try It Yourself</p>
+              <h2 className="text-white text-2xl font-black mb-4">Scan This QR to Experience ModenX</h2>
+
+              <div className="flex items-center justify-center space-x-8">
+                {/* Live QR */}
+                <div className="bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => setScanCount(c => c + 1)}>
+                  <div className="w-40 h-40 relative flex items-center justify-center">
+                    <div className="grid grid-cols-9 gap-0.5 w-36 h-36">
+                      {Array.from({ length: 81 }).map((_, i) => {
+                        const row = Math.floor(i / 9)
+                        const col = i % 9
+                        const isCorner = (row < 3 && col < 3) || (row < 3 && col > 5) || (row > 5 && col < 3)
+                        const isRand = [4,12,18,22,28,31,36,40,45,52,58,63,68,72,76].includes(i)
+                        const isBlue = [13,14,15,21,22,23,30,31,32,48,49,50,57,58,59].includes(i)
+                        return <div key={i} className={`w-full h-full rounded-sm ${isCorner ? 'bg-blue-800' : isBlue ? 'bg-blue-600' : isRand ? 'bg-gray-800' : 'bg-white'}`} />
+                      })}
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center shadow">
+                        <span className="text-yellow-400 font-black italic text-sm">mX</span>
+                      </div>
+                    </div>
+                  </div>
+                  {scanCount > 0 && (
+                    <div className="mt-2 text-center">
+                      <p className="text-xs font-bold text-blue-600">{scanCount} {scanCount === 1 ? 'person' : 'people'} scanned!</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* What happens when you scan */}
+                <div className="text-left text-white space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-sm">1</div>
+                    <p className="text-sm">You become a customer</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-sm">2</div>
+                    <p className="text-sm">Staff sees your profile instantly</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-sm">3</div>
+                    <p className="text-sm">You get a welcome offer on WhatsApp</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-sm">4</div>
+                    <p className="text-sm">Every future visit is personalized</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live counter */}
+              <div className="mt-6 pt-4 border-t border-blue-500 flex items-center justify-between">
+                <p className="text-blue-200 text-xs">Point your phone camera at this QR</p>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                  <p className="text-white text-xs font-semibold">Live Demo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* The ask */}
+        <div className={`mt-10 transition-all duration-700 delay-1500 ${finaleStep >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <p className="text-gray-400 text-sm mb-4">The offline customer journey, reimagined.</p>
+          <div className="flex items-center justify-center space-x-4">
+            <button onClick={() => { setFinaleStep(0); setActiveView('checkin-flow'); setCheckinStep(1) }}
+              className="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl text-sm hover:bg-blue-700 shadow-lg">
+              Restart Demo
+            </button>
+            <button onClick={() => setActiveView('dashboard')}
+              className="border-2 border-blue-600 text-blue-600 font-bold px-8 py-3 rounded-xl text-sm hover:bg-blue-50">
+              Explore Dashboard
+            </button>
+          </div>
+          <p className="text-gray-300 text-xs mt-6">modenX · Board Presentation · April 2026 · Confidential</p>
+        </div>
+      </div>
+    )
+  }
+
   const views: Record<View, () => JSX.Element | null> = {
     'checkin-flow': renderCheckinFlow,
     'repeat-flow': renderRepeatFlow,
@@ -2351,6 +2484,7 @@ export default function Dashboard() {
     'outreach': renderOutreach,
     'wa-command': renderWACommand,
     'insights': renderInsights,
+    'demo-finale': renderFinale,
   }
 
   // ── RENDER ────────────────────────────────────────────────────────────────
@@ -2377,6 +2511,10 @@ export default function Dashboard() {
             <div className="bg-white text-blue-600 p-2 rounded"><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></div>
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">2</span>
           </div>
+          <button onClick={() => { setFinaleStep(0); setScanCount(0); setActiveView('demo-finale') }}
+            className="bg-yellow-400 text-blue-900 font-bold px-4 py-2 rounded-lg text-xs hover:bg-yellow-300 animate-pulse">
+            End Demo ★
+          </button>
         </div>
       </header>
 
